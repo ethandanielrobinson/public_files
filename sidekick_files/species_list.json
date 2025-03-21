@@ -1,0 +1,58 @@
+{
+    "species_list": [
+        "dragonborn",
+        "dwarf",
+        "elf",
+        "gnome",
+        "half-elf",
+        "halfing",
+        "half-orc",
+        "human",
+        "tiefling",
+        "aasimar",
+        "genasi",
+        "axani",
+        "cansin"
+    ],
+    "no_subclass": [
+        "half-elf",
+        "half-orc",
+        "tiefling",
+        "aasimar",
+        "axani",
+        "cansin"
+    ],
+    "dwarf": [
+        "mountain dwarf",
+        "hill dwarf"
+    ],
+    "elf": [
+        "high elf",
+        "wood elf",
+        "drow"
+    ],
+    "halfling": [
+        "lightfoot",
+        "stout"
+    ],
+    "human": [
+        "normal",
+        "variant"
+    ],
+    "dragonborn": [
+        "black",
+        "blue",
+        "brass",
+        "bronze",
+        "copper",
+        "gold",
+        "green",
+        "red",
+        "silver",
+        "white"
+    ],
+    "gnome": [
+        "forest gnome",
+        "rock gnome"
+    ]
+}

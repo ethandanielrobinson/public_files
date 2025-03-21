@@ -1,0 +1,7 @@
+{
+  "str" : ["athletics"],
+  "dex" : ["acrobatics", "sleight of hand", "stealth"],
+  "int" : ["arcana", "history","investigation", "nature", "religion"],
+  "wis" : ["animal handling", "insight", "medicine", "perception", "survival"],
+  "cha" : ["deception", "intimidation", "performance", "persuasion"]
+}

@@ -1,0 +1,522 @@
+id,nm,cst,wght,desc
+1,abacus,2.0,2.0,A counting tool used by scribes and merchants.
+2,shield,10.0,6.0,"Shields require the Utilize action to Don or Doff. You gain the Armor Class 
+benefit of a Shield only if you have training with it.  Equiping the shield 
+adds 2 to your armor class"
+5,arcane focus (crystal),10.0,1.0,"An arcane focus designed to channel the power of arcane spells. A sorcerer, 
+warlock, or wizard can use such an item as a spellcasting focus, as described 
+in chapter 10."
+6,arcane focus (orb),20.0,3.0,"An arcane focus designed to channel the power of arcane spells. A sorcerer, 
+warlock, or wizard can use such an item as a spellcasting focus, as described 
+in chapter 10."
+7,arcane focus (rod),10.0,2.0,"An arcane focus designed to channel the power of arcane spells. A sorcerer, 
+warlock, or wizard can use such an item as a spellcasting focus, as described 
+in chapter 10."
+8,arcane focus (staff),5.0,1.0,"An arcane focus designed to channel the power of arcane spells. A sorcerer, 
+warlock, or wizard can use such an item as a spellcasting focus, as described 
+in chapter 10."
+9,arcane focus (wand),10.0,1.0,"An arcane focus designed to channel the power of arcane spells. A sorcerer, 
+warlock, or wizard can use such an item as a spellcasting focus, as described 
+in chapter 10."
+10,ball bearing (bag of 1000),1.0,2.0,"As an action, you can spill these tine metal balls from their pouch to cover a 
+level, square area that is 10 feet on a side. A creature moving across the 
+covered area must succeed on a DC 10 Dexterity saving throw or fall prone. A 
+creature moving through the area at half speed doesn't need to make the save."
+11,bedroll,1.0,7.0,"You never know where you're going to sleep, and a bedroll helps you get better 
+sleep in a hayloft or on the cold ground. A bedroll consists of bedding and a 
+blanket thin enough to be rolled up and tied. In an emergency, it can double as 
+a stretcher."
+12,bell,1.0,0.0,"A standard bell that rings, typically used for signaling."
+13,blanket,0.5,3.0,"A thick, quilted, blanket made to keep you warm in cold weather."
+14,block and tackle,1.0,5.0,"A set of pulleys with a cable threaded through them and a hook to attach to 
+objects, a block and tackle allws you to hoist up to four times the weight you 
+can normaly lift."
+15,book,25.0,5.0,"A book might contain poetry, historical acounts, information pertaining to a 
+particular field of lore, diagrams and notes on gnomish contraptions, or just 
+about anything else than can be represented usint text or pictures. A book of 
+spells is a spellbook (see seperate definition)."
+16,caltrops (bag of 20),1.0,2.0,"As an action, you can spread a bag of caltrops to cover a square area that is 5 
+feet  on a side.  Any create that enters the area must succeed on a DC 15 
+Dexterity saving throw or stop moving this turn and take 1 piercing damage. 
+Taking this damage reduces the creatrue's walking speed by 10 feet until the 
+creature regains at least 1 hit point. A creature moving through the area at 
+half speed doesn't need to make the save."
+17,candle,0.01,0.0,"For 1 hour, a candle sheds bright light in a 5-foot radius and dim light for an 
+additional 5 feet."
+18,chain (10 feet),5.0,10.0,"A chain has 10 hit points. It can be burst with a successful DC 20 Strength 
+check."
+19,chalk (1 piece),0.01,0.0,A piece of chalk used for writing and marking on various surfaces.
+20,climber's kit,25.0,12.0,"A climber's kit includes special pitons, boot tips, gloves, and a harness. You 
+can use the climber's kit as an action to anchor yourself; when you do, you 
+can't fall more than 25 feet from the point where you anchored yourself, and 
+you can't climb more than 25 feet away from that point without undoing the 
+anchor."
+21,component pouch,25.0,2.0,"A component pouch is a small, watertight leather belt pouch that has 
+compartments to hold all the material components and other special items you 
+need to cast your spells, except for those components that have a specific cost 
+(as indicated in a spell's description)."
+22,crowbar,2.0,5.0,"Using a crowbar grants advantage to Strength checks where the crowbar's 
+leverage can be applied."
+23,druidic focus (sprig of mistletoe),1.0,0.0,"A druidic focus might be a sprig of mistletoe or holly, a wand or scepter made 
+of yew or another special wood, a staff drawn whole out of a living tree, or a 
+totem object incorporating feathers, fur, bones, and teeth from sacred animals. 
+A druid can use such an object as a spellcasting focus, as described in chapter 
+10."
+24,druidic focus (totem),1.0,0.0,"A druidic focus might be a sprig of mistletoe or holly, a wand or scepter made 
+of yew or another special wood, a staff drawn whole out of a living tree, or a 
+totem object incorporating feathers, fur, bones, and teeth from sacred animals. 
+A druid can use such an object as a spellcasting focus, as described in chapter 
+10."
+25,druidic focus (wooden staff),5.0,4.0,"A druidic focus might be a sprig of mistletoe or holly, a wand or scepter made 
+of yew or another special wood, a staff drawn whole out of a living tree, or a 
+totem object incorporating feathers, fur, bones, and teeth from sacred animals. 
+A druid can use such an object as a spellcasting focus, as described in chapter 
+10."
+26,druidic focus (yew wand),10.0,1.0,"A druidic focus might be a sprig of mistletoe or holly, a wand or scepter made 
+of yew or another special wood, a staff drawn whole out of a living tree, or a 
+totem object incorporating feathers, fur, bones, and teeth from sacred animals. 
+A druid can use such an object as a spellcasting focus, as described in chapter 
+10."
+27,fishing tackle,1.0,4.0,"This kit includes a wooden rod, silken line, corkwood 
+bobbers, steel hooks, lead sinkers, velvet lures, and narrow netting."
+28,grappling hook,2.0,4.0,"When tied to the end of a rope, a grappling hook can secure 
+the rope to a battlement, window ledge, tree limb, or other protrusion."
+29,hammer,1.0,3.0,"This one-handed hammer with an iron head is useful for pounding 
+pitons into a wall."
+30,"hammer, sledge",2.0,10.0,"This two-handed, iron-headed hammer is good for smashing 
+open treasure chests."
+31,healer's kit,5.0,3.0,"This kit is a leather pouch containing bandages, salves, and
+splints. The kit has ten uses. As an action, you can expend one use of the kit to stabilize
+a creature that has 0 hit points, without needing to make a Wisdom (Medicine) check."
+32,holy symbol (amulet),5.0,1.0,"A holy symbol is a representation of a god or pantheon. It 
+might be an amulet depicting a symbol representing a deity, the same symbol carefully 
+engraved or inlaid as an emblem on a shield, or a tiny box holding a fragment of 
+a sacred relic. Appendix B lists the symbols commonly associated with many gods in 
+the multiverse. A cleric or paladin can use a holy symbol as a spellcasting focus, 
+as described in the Spellcasting section. To use the symbol in this way, the caster 
+must hold it in hand, wear it visibly, or bear it on a shield."
+33,holy symbol (emblem),5.0,0.0,"A holy symbol is a representation of a god or pantheon. It 
+might be an amulet depicting a symbol representing a deity, the same symbol carefully 
+engraved or inlaid as an emblem on a shield, or a tiny box holding a fragment of 
+a sacred relic. Appendix B lists the symbols commonly associated with many gods in 
+the multiverse. A cleric or paladin can use a holy symbol as a spellcasting focus, 
+as described in the Spellcasting section. To use the symbol in this way, the caster 
+must hold it in hand, wear it visibly, or bear it on a shield."
+34,holy symbol (reliquary),5.0,2.0,"A holy symbol is a representation of a god or pantheon. It 
+might be an amulet depicting a symbol representing a deity, the same symbol carefully 
+engraved or inlaid as an emblem on a shield, or a tiny box holding a fragment of 
+a sacred relic. Appendix B lists the symbols commonly associated with many gods in 
+the multiverse. A cleric or paladin can use a holy symbol as a spellcasting focus, 
+as described in the Spellcasting section. To use the symbol in this way, the caster 
+must hold it in hand, wear it visibly, or bear it on a shield."
+35,hourglass,25.0,1.0,A standard hourglass used to measure the passage of time.
+36,hunting trap,5.0,25.0,"When you use your action to set it, this trap forms a 
+saw-toothed steel ring that snaps shut when a creature steps on a pressure plate 
+in the center. The trap is affixed by a heavy chain to an immobile object, such 
+as a tree or a spike driven into the ground. A creature that steps on the plate 
+must succeed on a DC 13 Dexterity saving throw or take 1d4 piercing damage and 
+stop moving. Thereafter, until the creature breaks free of the trap, its movement 
+is limited by the length of the chain (typically 3 feet long). A creature can use 
+its action to make a DC 13 Strength check, freeing itself or another creature 
+within its reach on a success. Each failed check deals 1 piercing damage to the 
+trapped creature."
+37,ink pen,0.02,0.0,"An ink pen is a wooden stick with a special tip on the end. The 
+tip draws ink in when dipped in a vial and leaves an ink trail when drawn across 
+a surface."
+38,ladder (10-foot),0.1,25.0,A Ladder is 10 feet tall. You must climb to move up or down it.
+39,lamp,0.5,1.0,"A lamp casts bright light in a 15-foot radius and dim light for an 
+additional 30 feet. Once lit, it burns for 6 hours on a flask (1 pint) of oil."
+40,"lantern, bullseye",10.0,2.0,"A bullseye lantern casts bright light in a 60-foot cone 
+and dim light for an additional 60 feet. Once lit, it burns for 6 hours on a flask 
+(1 pint) of oil."
+41,"lantern, hooded",5.0,2.0,"A hooded lantern casts bright light in a 30-foot radius and 
+dim light for an additional 30 feet. Once lit, it burns for 6 hours on a flask 
+(1 pint) of oil. As an action, you can lower the hood, reducing the light to dim 
+light in a 5-foot radius."
+42,lock,10.0,1.0,"A key is provided with the lock. Without the key, a creature proficient 
+with thieves' tools can pick this lock with a successful DC 15 Dexterity check. 
+Your DM may decide that better locks are available for higher prices."
+43,magnifying glass,100.0,0.0,"This lense allows a closer look at small objects. It is also useful 
+as a substitute for flint and steel when starting fires. Lighting a fire with a magnifying
+glass requires light as bright as sunlight to ignite, and about 5 minutes for the fire 
+to ignite. A manginfying glass grants advantage on any ability check made to appraise 
+or inspect an item that is small or highly detailed."
+44,manacles,2.0,6.0,"These metal restraints can bind a Small or Medium creature. 
+Escaping the manacles requires a successful DC 20 Dexterity check. Breaking them requires 
+a successful DC 20 Strength check. Each set of manacles comes with one key. Without the 
+key, a creature proficient with thieves' tools can pick the manacles' lock with a successful 
+DC 15 Dexterity check. Manacles have 15 hit points."
+45,mess kit,0.2,1.0,"This tin box contains a cup and simple cutlery. The box clamps 
+together, and one side can be used as a cooking pan and the other as a plate or 
+shallow bowl."
+46,"mirror, steel",5.0,0.5,"A steel mirror is handy when you want to look around corners, 
+signal friends with reflected sunlight, keep an eye on a medusa, make sure that you 
+look good enough to present yourself to the queen, or examine wounds that youve 
+received on hard-to-see parts of your body."
+47,paper (one sheet),0.2,0.0,A sheet of standard paper is made from cloth fibers.
+48,parchment (one sheet),0.1,0.0,"A sheet of parchment is a piece of goat hide or sheepskin that has 
+been prepared for writing on."
+49,"pick, miner's",2.0,10.0,"A miner's pick is designed to concentrate the force of its blow on 
+a small area."
+50,piton,0.05,0.25,"When a wall doesnt offer handholds and footholds, you can make your 
+own. A piton is a steel spike with an eye through which you can loop a rope."
+51,pole (10-foot),0.05,7.0,"When you suspect a trap, you can put the end of your 10-foot pole 
+through that hole in the wall instead of reaching in with your hand."
+52,"ram, portable",4.0,35.0,"You can use a portable ram to break down doors. When doing so, you 
+gain a +4 bonus on the Strength check. One other character can help you use 
+the ram, giving you advantage on this check."
+53,"rope, hempen (50 feet)",1.0,10.0,"Rope, has 2 hit points and can be burst with a DC 17 Strength check."
+54,"rope, silk (50 feet)",10.0,5.0,"Rope, has 2 hit points and can be burst with a DC 17 Strength 
+check."
+55,"scale, merchant's",5.0,3.0,"A scale includes a small balance, pans, and a suitable assortment 
+of weights up to 2 pounds. With it, you can measure the exact weight of small objects, 
+such as raw precious metals or trade goods, to help determine their worth."
+56,sealing wax,0.5,0.0,"When you press a signet ring into warm sealing wax, you leave an identifying 
+mark."
+57,shovel,2.0,5.0,A standard shovel used for digging.
+58,signal whistle,0.05,0.0,A small whistle used for signaling.
+59,signet ring,5.0,0.0,"Each signet ring has a distinctive design carved into it. When 
+you press this ring into warm sealing wax, you leave an identifying mark."
+60,soap,0.02,0.0,A commodity used for bathing.
+61,spellbook,50.0,3.0,"Essential for wizards, a spellbook is a leather-bound tome with 
+100 blank vellum pages suitable for recording spells."
+62,"spikes, iron (10)",1.0,5.0,Standard iron spikes typically used with a hammer.
+63,spyglass,1000.0,1.0,"Objects viewed through a spyglass are magnified to twice their 
+size."
+64,"tent, two-person",2.0,20.0,"A simple and portable canvas shelter, a tent sleeps two."
+65,tinderbox,0.5,1.0,"This small container holds flint, fire steel, and tinder (usually 
+dry cloth soaked in light oil) used to kindle a fire. Using it to light a torch -- or 
+anything else with abundant, exposed fuel -- takes an action. Lighting any other 
+fire takes 1 minute."
+66,torch,0.01,1.0,"A torch burns for 1 hour, providing bright light in a 20-foot radius 
+and dim light for an additional 20 feet. If you make a melee attack with a burning 
+torch and hit, it deals 1 fire damage."
+67,whetstone,0.01,1.0,A standard whetstone used to sharpen blades.
+68,club,0.1,2.0,"Proficiency with a Club allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+69,dagger,2.0,1.0,"Proficiency with a Dagger allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+70,greatclub,0.2,10.0,"Proficiency with a Greatclub allows you to add your proficiency 
+bonus to the attack roll for any attack you make with it."
+71,handaxe,5.0,2.0,"Proficiency with a Handaxe allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+72,javelin,0.5,2.0,"Proficiency with a Javelin allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+73,light hammer,2.0,2.0,"Proficiency with a Light Hammer allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+74,mace,5.0,4.0,"Proficiency with a Mace allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+75,quarterstaff,0.02,4.0,"Proficiency with a Quarterstaff allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+76,sickle,1.0,2.0,"Proficiency with a Sickle allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+77,spear,1.0,3.0,"Proficiency with a Spear allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+78,"crossbow, light",25.0,5.0,"Proficiency with a Light Crossbow allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+79,dart,0.05,0.25,"Proficiency with a Dart allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+80,shortbow,25.0,2.0,"Proficiency with a Shortbow allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+81,sling,0.1,0.0,"Proficiency with a Sling allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+82,battleaxe,10.0,4.0,"Proficiency with a Battleaxe allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+83,flail,10.0,2.0,"Proficiency with a Flail allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+84,glaive,20.0,6.0,"Proficiency with a Glaive allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+85,greataxe,30.0,7.0,"Proficiency with a Greataxe allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+86,greatsword,50.0,6.0,"Proficiency with a Greatsword allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+87,halberd,20.0,6.0,"Proficiency with a Halberd allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+88,lance,10.0,6.0,"Proficiency with a Lance allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it. A Lance requires two hands 
+to wield when you aren't mounted."
+89,longsword,15.0,3.0,"Proficiency with a Longsword allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+90,maul,10.0,10.0,"Proficiency with a Maul allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+91,morningstar,15.0,4.0,"Proficiency with a Morningstar allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+92,pike,5.0,18.0,"Proficiency with a Pike allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+93,rapier,25.0,2.0,"Proficiency with a Rapier allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+94,scimitar,25.0,3.0,"Proficiency with a Scimitar allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+95,shortsword,10.0,2.0,"Proficiency with a Shortsword allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+96,trident,5.0,4.0,"Proficiency with a Trident allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+97,war pick,5.0,2.0,"Proficiency with a War Pick allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+98,warhammer,15.0,2.0,"Proficiency with a Warhammer allows you to add your proficiency 
+bonus to the attack roll for any attack you make with it."
+99,whip,2.0,3.0,"Proficiency with a Whip allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+100,blowgun,10.0,1.0,"Proficiency with a Blowgun allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+101,"crossbow, hand",75.0,3.0,"Proficiency with a Hand Crossbow allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+102,"crossbow, heavy",50.0,18.0,"Proficiency with a Heavy Crossbow allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+103,longbow,50.0,2.0,"Proficiency with a Longbow allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it."
+104,net,1.0,3.0,"Proficiency with a net allows you to add your proficiency bonus 
+to the attack roll for any attack you make with it.
+A Large or smaller creature hit by a net is restrained until it is freed. A 
+net has no effect on creatures that are formless, or creatures that are Huge or 
+larger. A creature can use its action to make a DC 10 Strength check, freeing 
+itself or another creature within its reach on a success. Dealing 5 slashing 
+damage to the net (AC 10) also frees the creature without harming it, ending 
+the effect and destroying the net.
+When you use an action, bonus action, or reaction to attack with a net, you 
+can make only one attack regardless of the number of attacks you can normally make."
+105,padded,5.0,8.0,Padded armor consists of quilted layers of cloth and batting.
+106,leather,10.0,10.0,"The breastplate and shoulder protectors of this armor are made of 
+leather that has been stiffened by being boiled in oil. The rest of the armor 
+is made of softer and more flexible materials."
+107,studded leather,45.0,13.0,"Made from tough but flexible leather, studded leather is reinforced 
+with close-set rivets or spikes."
+108,hide,10.0,12.0,This crude armor consists of thick furs and pelts.
+109,chain shirt,50.0,20.0,"Made of interlocking metal rings, a chain shirt is worn between layers 
+of clothing or leather. This armor offers modest protection to the wearer's upper 
+body and allows the sound of the rings rubbing against one another to be muffled by 
+outer layers."
+110,scale mail,50.0,45.0,"This armor consists of a coat and leggings (and perhaps a separate 
+skirt) of leather covered with overlapping pieces of metal, much like the scales 
+of a fish. The suit includes gauntlets."
+111,breastplate,400.0,20.0,"This armor consists of a fitted metal chest piece worn with supple 
+leather. Although it leaves the legs and arms relatively unprotected, this armor 
+provides good protection for the wearer's vital organs while leaving the wearer 
+relatively unencumbered."
+112,half plate,750.0,40.0,"Half plate consists of shaped metal plates that cover most of the wearer's 
+body. It does not include leg protection beyond simple greaves that are attached with 
+leather straps."
+113,ring mail,30.0,40.0,"This armor is leather armor with heavy rings sewn into it. The rings 
+help reinforce the armor against blows from swords and axes. Ring mail is inferior 
+to chain mail, and it's usually worn only by those who can't afford better armor."
+114,chain mail,75.0,55.0,"Made of interlocking metal rings, chain mail includes a layer of quilted 
+fabric worn underneath the mail to prevent chafing and to cushion the impact of 
+blows. The suit includes gauntlets."
+115,splint,200.0,60.0,"This armor is made of narrow vertical strips of metal riveted to a 
+backing of leather that is worn over cloth padding. Flexible chain mail protects 
+the joints."
+116,plate,1500.0,65.0,"Plate consists of shaped, interlocking metal plates to cover the entire 
+body. A suit of plate includes gauntlets, heavy leather boots, a visored helmet, 
+and thick layers of padding underneath the armor. Buckles and straps distribute 
+the weight over the body."
+117,alchemist's supplies,50.0,8.0,"These special tools include the items needed to pursue a craft or trade. 
+Proficiency with a set of artisan's tools lets you add your proficiency bonus to any 
+ability checks you make using the tools in your craft. Each type of artisan's tools 
+requires a separate proficiency."
+118,brewer's supplies,20.0,9.0,"These special tools include the items needed to pursue a craft or trade. 
+Proficiency with a set of artisan's tools lets you add your proficiency bonus to any 
+ability checks you make using the tools in your craft. Each type of artisan's tools 
+requires a separate proficiency."
+119,calligrapher's supplies,10.0,5.0,"These special tools include the items needed to pursue a craft or trade. 
+Proficiency with a set of artisan's tools lets you add your proficiency bonus to any 
+ability checks you make using the tools in your craft. Each type of artisan's tools 
+requires a separate proficiency."
+120,carpenter's tools,8.0,6.0,"These special tools include the items needed to pursue a craft or trade. 
+Proficiency with a set of artisan's tools lets you add your proficiency bonus to any 
+ability checks you make using the tools in your craft. Each type of artisan's tools 
+requires a separate proficiency."
+121,cartographer's tools,15.0,6.0,"These special tools include the items needed to pursue a craft or trade. 
+Proficiency with a set of artisan's tools lets you add your proficiency bonus to any 
+ability checks you make using the tools in your craft. Each type of artisan's tools 
+requires a separate proficiency."
+122,cobbler's tools,5.0,5.0,"These special tools include the items needed to pursue a craft or trade. 
+Proficiency with a set of artisan's tools lets you add your proficiency bonus to any 
+ability checks you make using the tools in your craft. Each type of artisan's tools 
+requires a separate proficiency."
+123,cook's utensils,1.0,8.0,"These special tools include the items needed to pursue a craft or trade. 
+Proficiency with a set of artisan's tools lets you add your proficiency bonus to any 
+ability checks you make using the tools in your craft. Each type of artisan's tools 
+requires a separate proficiency."
+124,glassblower's tools,30.0,5.0,"These special tools include the items needed to pursue a craft or trade. 
+Proficiency with a set of artisan's tools lets you add your proficiency bonus to any 
+ability checks you make using the tools in your craft. Each type of artisan's tools 
+requires a separate proficiency."
+125,jeweler's tools,25.0,2.0,"These special tools include the items needed to pursue a craft or trade. 
+Proficiency with a set of artisan's tools lets you add your proficiency bonus to any 
+ability checks you make using the tools in your craft. Each type of artisan's tools 
+requires a separate proficiency."
+126,leatherworker's tools,5.0,5.0,"These special tools include the items needed to pursue a craft or trade. 
+Proficiency with a set of artisan's tools lets you add your proficiency bonus to any 
+ability checks you make using the tools in your craft. Each type of artisan's tools 
+requires a separate proficiency."
+127,mason's tools,10.0,8.0,"These special tools include the items needed to pursue a craft or trade. 
+Proficiency with a set of artisan's tools lets you add your proficiency bonus to any 
+ability checks you make using the tools in your craft. Each type of artisan's tools 
+requires a separate proficiency."
+128,painter's tools,10.0,5.0,"These special tools include the items needed to pursue a craft or trade. 
+Proficiency with a set of artisan's tools lets you add your proficiency bonus to any 
+ability checks you make using the tools in your craft. Each type of artisan's tools 
+requires a separate proficiency."
+129,potter's tools,10.0,3.0,"These special tools include the items needed to pursue a craft or trade. 
+Proficiency with a set of artisan's tools lets you add your proficiency bonus to any 
+ability checks you make using the tools in your craft. Each type of artisan's tools 
+requires a separate proficiency."
+130,smith's tools,20.0,8.0,"These special tools include the items needed to pursue a craft or trade. 
+Proficiency with a set of artisan's tools lets you add your proficiency bonus to any 
+ability checks you make using the tools in your craft. Each type of artisan's tools 
+requires a separate proficiency."
+131,tinker's tools,50.0,10.0,"These special tools include the items needed to pursue a craft or trade. 
+Proficiency with a set of artisan's tools lets you add your proficiency bonus to any 
+ability checks you make using the tools in your craft. Each type of artisan's tools 
+requires a separate proficiency."
+132,weaver's tools,1.0,5.0,"These special tools include the items needed to pursue a craft or trade. 
+Proficiency with a set of artisan's tools lets you add your proficiency bonus to any 
+ability checks you make using the tools in your craft. Each type of artisan's tools 
+requires a separate proficiency."
+133,woodcarver's tools,1.0,5.0,"These special tools include the items needed to pursue a craft or trade. 
+Proficiency with a set of artisan's tools lets you add your proficiency bonus to any 
+ability checks you make using the tools in your craft. Each type of artisan's tools 
+requires a separate proficiency."
+134,disguise kit,25.0,3.0,"This pouch of cosmetics, hair dye, and small props lets you create 
+disguises that change your physical appearance. Proficiency with this kit lets 
+you add your proficiency bonus to any ability checks you make to create a visual 
+disguise."
+135,forgery kit,15.0,5.0,"This small box contains a variety of papers and parchments, pens and 
+inks, seals and sealing wax, gold and silver leaf, and other supplies necessary 
+to create convincing forgeries of physical documents. Proficiency with this kit 
+lets you add your proficiency bonus to any ability checks you make to create a 
+physical forgery of a document."
+136,dice set,0.1,0.0,"If you are proficient with a gaming set, you can add your proficiency 
+bonus to ability checks you make to play a game with that set."
+137,dragonchess set,1.0,0.5,"If you are proficient with a gaming set, you can add your proficiency 
+bonus to ability checks you make to play a game with that set."
+138,playing card set,0.5,0.0,"If you are proficient with a gaming set, you can add your proficiency 
+bonus to ability checks you make to play a game with that set."
+139,three dragon ante set,1.0,0.0,"If you are proficient with a gaming set, you can add your proficiency 
+bonus to ability checks you make to play a game with that set."
+140,herbalism kit,5.0,3.0,"This kit contains a variety of instruments such as clippers, mortar 
+and pestle, and pouches and vials used by herbalists to create remedies and potions. 
+Proficiency with this kit lets you add your proficiency bonus to any ability checks 
+you make to identify or apply herbs. Also, proficiency with this kit is required 
+to create antitoxin and any potion of healing."
+141,navigator's tools,25.0,2.0,"This set of instruments is used for navigation at sea. Proficiency with navigator's 
+tools lets you chart a ship's course and follow navigation charts. In addition, 
+these tools allow you to add your proficiency bonus to any ability check you make 
+to avoid getting lost at sea.
+"
+142,poisoner's kit,50.0,2.0,"A poisoner's kit includes the vials, chemicals, and other equipment necessary for 
+the creation of poisons. Proficiency with this kit lets you add your proficiency 
+bonus to any ability checks you make to craft or use poisons.
+"
+143,thieves' tools,25.0,1.0,"This set of tools includes a small file, a set of lock picks, a small mirror mounted 
+on a metal handle, a set of narrow-bladed scissors, and a pair of pliers. Proficiency 
+with these tools lets you add your proficiency bonus to any ability checks you make 
+to disarm traps or open locks.
+"
+144,bagpipes,30.0,6.0,"If you have proficiency with a given musical instrument, you can add your 
+proficiency bonus to any ability checks you make to play music with the 
+instrument. A bard can use bagpipes as a spellcasting focus.
+"
+145,drum,6.0,3.0,"If you have proficiency with a given musical instrument, you can add your 
+proficiency bonus to any ability checks you make to play music with the 
+instrument. A bard can use a musical instrument as a spellcasting focus.
+"
+146,dulcimer,25.0,10.0,"If you have proficiency with a given musical instrument, you can add your 
+proficiency bonus to any ability checks you make to play music with the 
+instrument. A bard can use a musical instrument as a spellcasting focus.
+"
+147,flute,2.0,1.0,"If you have proficiency with a given musical instrument, you can add your 
+proficiency bonus to any ability checks you make to play music with the 
+instrument. A bard can use a musical instrument as a spellcasting focus.
+"
+148,lute,35.0,2.0,"If you have proficiency with a given musical instrument, you can add your 
+proficiency bonus to any ability checks you make to play music with the 
+instrument. A bard can use a musical instrument as a spellcasting focus.
+"
+149,lyre,30.0,2.0,"If you have proficiency with a given musical instrument, you can add your 
+proficiency bonus to any ability checks you make to play music with the 
+instrument. A bard can use a musical instrument as a spellcasting focus.
+"
+150,horn,3.0,2.0,"If you have proficiency with a given musical instrument, you can add your 
+proficiency bonus to any ability checks you make to play music with the 
+instrument. A bard can use a musical instrument as a spellcasting focus.
+"
+151,pan flute,12.0,2.0,"If you have proficiency with a given musical instrument, you can add your 
+proficiency bonus to any ability checks you make to play music with the 
+instrument. A bard can use a musical instrument as a spellcasting focus.
+"
+152,shawm,2.0,1.0,"If you have proficiency with a given musical instrument, you can add your 
+proficiency bonus to any ability checks you make to play music with the 
+instrument. A bard can use a musical instrument as a spellcasting focus.
+"
+153,viol,30.0,1.0,"If you have proficiency with a given musical instrument, you can add your 
+proficiency bonus to any ability checks you make to play music with the 
+instrument. A bard can use a musical instrument as a spellcasting focus.
+"
+154,copper piece,0.01,0.02,"A single copper piece buys a candle, a torch, or a piece of chalk."
+155,silver piece,0.1,0.02,"A silver piece buys a laborer's work for half a day, a flask of lamp oil, or a 
+night's rest in a poor inn."
+156,electrum piece,0.5,0.02,An electrum piece is worth five silver pieces.
+157,gold piece,1.0,0.02,"With one gold piece, a character can buy a bedroll, 50 feet of good rope, or a 
+goat. A skilled (but not exceptional) artisan can earn one gold piece a day. 
+The gold piece is the standard unit of measure for wealth, even if the coin 
+itself is not commonly used. When merchants discuss deals that involve goods 
+or services worth hundreds or thousands of gold pieces, the transactions don't 
+usually involve the exchange of individual coins. Rather, the gold piece is a 
+standard measure of value, and the actual exchange is in gold bars, letters 
+of credit, or valuable goods."
+158,platinum piece,10.0,0.02,A platinum piece is worth ten gold pieces.
+159,backpack,2.0,5.0,"A backpack is a leather pack carried on the back, typically with straps to secure 
+it. A backpack can hold 1 cubic foot/ 30 pounds of gear.
+
+You can also strap items, such as a bedroll or a coil of rope, to the outside of 
+a backpack."
+160,barrel,2.0,70.0,"A barrel can hold 40 gallons of liquid, or 4 cubic feet of solid 
+material."
+161,basket,0.4,2.0,A basket can hold 2 cubic feet/40 pounds of gear.
+162,bottle,2.0,2.0,A bottle can hold 1 1/2 pints of liquid.
+163,bucket,0.05,2.0,"A bucket can hold 3 gallons of liquid, or 1/2 cubic foot of solid material."
+164,chest,5.0,25.0,A chest can hold 12 cubic feet/ 300 pounds of gear.
+165,flask,0.02,1.0,A flask or tankard can hold 1 pint of liquid.
+166,tankard,0.02,1.0,A flask or tankard can hold 1 pint of liquid.
+167,jug,0.02,0.4,A jug or pitcher can hold 1 gallon of liquid.
+168,pitcher,0.02,0.4,A jug or pitcher can hold 1 gallon of liquid.
+169,iron pot,2.0,10.0,An iron pot can hold 1 gallon of liquid.
+170,pouch,0.5,1.0,"A cloth or leather pouch can hold 1/5 cubic foot/ 6 pounds of gear - or up to 
+20 sling bullets or 50 blowgun needles, among other things. A compartmentalized 
+pouch for holding spell components is called a component pouch."
+171,sack,0.01,0.5,A sack can hold 1 cubic foot/ 30 pounds of gear.
+172,vial,0.5,0.0,A vial can hold 4 ounces of liquid.
+173,waterskin,0.2,5.0,A waterskin can hold 4 pints of liquid.
+174,"case, crossbow bolt",1.0,1.0,This wooden case can hold up to twenty crossbow bolts.
+175,"case, map or scroll",1.0,1.0,"This cylindrical leather case can hold up to ten rolled-up sheets of paper or 
+five rolled-up sheets of parchment."
+176,quiver,1.0,1.0,A quiver can hold up to 20 arrows.
+177,arrow,0.05,0.05,"Arrows are used with a weapon that has the ammunition property to make a ranged 
+attack. Each time you attack with the weapon, you expend one piece of 
+ammunition. Drawing the ammunition from a quiver, case, or other container is 
+part of the attack (you need a free hand to load a one-handed weapon). At the 
+end of the battle, you can recover half your expended ammunition by taking a 
+minute to search the battlefield. 20 arrows can be purchased for 1 gp, and 
+weigh about one pound."
+178,blowgun needle,0.02,0.02,"Blowgun needles are used with a weapon that has the ammunition property to make 
+a ranged attack. Each time you attack with the weapon, you expend one piece of 
+ammunition. Drawing the ammunition from a quiver, case, or other container is 
+part of the attack (you need a free hand to load a one-handed weapon). At the 
+end of the battle, you can recover half your expended ammunition by taking a 
+minute to search the battlefield. 50 needles can be purchased for 1 gp, and
+weigh about one pound."
+179,crossbow bolt,0.05,0.075,"Crossbow bolts are used with a weapon that has the ammunition property to make 
+a ranged attack. Each time you attack with the weapon, you expend one piece of 
+ammunition. Drawing the ammunition from a quiver, case, or other container is 
+part of the attack (you need a free hand to load a one-handed weapon). At the 
+end of the battle, you can recover half your expended ammunition by taking a 
+minute to search the battlefield. 20 crossbow bolts can be purchased for 1 gp, 
+and weigh about one and half pounds."
+180,sling bullet,0.002,0.075,"Sling bullets are used with a weapon that has the ammunition property to make a 
+ranged attack. Each time you attack with the weapon, you expend one piece of 
+ammunition. Drawing the ammunition from a quiver, case, or other container is 
+part of the attack (you need a free hand to load a one-handed weapon). At the 
+end of the battle, you can recover half your expended ammunition by taking a 
+minute to search the battlefield. 20 bullets can be purchased for 4 cp, and
+weigh about one and half pounds."

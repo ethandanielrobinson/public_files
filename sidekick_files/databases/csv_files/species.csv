@@ -1,0 +1,17 @@
+id,nm,abil_2,txt_fl,maj_age,max_age,sz,spd,drkvsn,hmnd,spcl
+1,dwarf,CON,enter,50,350,med,25,1,1,dwarf_abilities
+2,elf,DEX,enter,100,750,med,30,1,1,elf_abilities
+3,halfling,DEX,enter,20,150,small,25,0,1,halfling_abilities
+4,human,NONE,enter,18,100,med,30,0,1,human_abilities
+5,dragonborn,STR,enter,15,80,med,30,0,1,dragonborn_abilities
+6,gnome,INT,enter,40,500,small,25,1,1,gnome_abilities
+7,half-elf,CHA,enter,20,180,med,30,1,1,half-elf_abilities
+8,half-orc,STR,enter,14,75,med,30,1,1,half-orc_abilities
+9,tieflings,CHA,enter,18,,med,30,1,1,tieflings_abilities
+10,aasimar,CHOOSE,enter,18,1000,med,30,1,1,aasimar_abilities
+11,axani,WIS,enter,18,100,med,30,1,1,axani_abilities
+12,cansin,CHOOSE,enter,18,90,med,3,1,1,cansin_abilities
+13,air genasi,CHOOSE,enter,18,110,med,35,1,1,air_genasi_abilities
+14,stone genasi,CHOOSE,enter,18,110,med,30,1,1,stone_genasi_abilities
+15,fire genasi,CHOOSE,enter,18,110,med,30,1,1,fire_genasi_abilities
+16,water genasi,CHOOSE,enter,18,110,med,30,1,1,water_genasi_abilities

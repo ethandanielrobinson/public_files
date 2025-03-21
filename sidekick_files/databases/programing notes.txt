@@ -1,0 +1,4 @@
+programing notes
+The price of ale per liquid ounce is 0.0015625 gp
+one mug is 25.6 liquid ounces
+make sure to use round(in_num, 5)

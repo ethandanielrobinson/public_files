@@ -1,0 +1,13 @@
+id,nm,ac,ar_type,stlth,need_str
+105,padded,11,1,0,0
+106,leather,11,1,1,0
+107,studded leather,12,1,1,0
+108,hide,12,2,1,0
+109,chain shirt,13,2,1,0
+110,scale mail,14,2,0,0
+111,breastplate,14,2,1,0
+112,half plate,15,2,0,0
+113,ring mail,14,3,0,0
+114,chain mail,16,3,0,13
+115,splint,17,3,0,15
+116,plate,18,3,0,15

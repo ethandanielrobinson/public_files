@@ -1,0 +1,30 @@
+query_1 = """
+    CREATE TABLE IF NOT EXISTS species_master (
+        id INTEGER PRIMARY KEY,
+        nm TEXT NOT NULL, -- Species Name
+        abil_2 INT NOT NULL, -- Major ability improvement
+        txt_fl TEXT,  -- A text file representing the full flavor text
+        maj_age INTEGER,  -- Age of Majority
+        max_age INTEGER,  -- Average Lifespan
+        sz INTEGER NOT NULL, -- Size
+        spd INTEGER NOT NULL,  -- Speed
+        drkvsn BOOLEAN, -- Does the species have darkvision
+        hmnd BOOLEAN, -- Is the species humaniod
+        spcl TEXT);
+    """
+
+cursor.execute(query_1)
+
+# Open the CSV file and read data
+with open(csv_path, "r", newline="", encoding="utf-8") as csvfile:
+    reader = csv.reader(csvfile)
+    headers = next(reader)  # Skip the first row (column names)
+
+    # Define the SQL INSERT statement
+    insert_query = """
+    INSERT INTO species_master (id, nm, abil_2, txt_fl, maj_age, max_age, sz, spd, drkvsn, hmnd, spcl) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    """
+
+    # Insert each row into the database
+    cursor.executemany(insert_query, reader)

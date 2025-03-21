@@ -1,0 +1,21 @@
+{
+   "light armor": {
+       "common clothes" : 10,
+       "padded armor" : 11,
+       "leather armor" : 11,
+       "studded leather armor" : 12
+   },
+   "medium armor" :{
+       "hide armor" : 12,
+       "chain shirt" : 13,
+       "scale mail" : 14,
+       "breastplate" : 14,
+       "half plate" : 15
+   },
+   "heavy armor" : {
+       "ring mail" : 14,
+       "chain mail" : 16,
+       "splint armor" : 17,
+       "plate armor" : 18
+   }
+}

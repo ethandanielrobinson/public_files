@@ -1,0 +1,17 @@
+{
+ "barbarian": "#4F2683",
+ "bard": "#674730",
+ "cleric": "007DA5",
+ "druid": "#007030",
+ "fighter": "#990000",
+ "monk": "#B3A18D",
+ "paladin": "#35383A",
+ "rogue": "#565A5C",
+ "sorcerer": "#992A31",
+ "warlock": "#BF5700",
+ "wizard": "#191970",
+ "artificer": "#BA1C21",
+ "expert": "#154734",
+ "warrior": "#8C1D40",
+ "mage": "#0051BA"
+}

@@ -1,0 +1,38 @@
+id,nm,is_mrtl,dam_amt,dam_die,dam_typ,has_fin,i_t_h,has_vers,vers_die,has_rng,norm_rng,max_rng,c_b_thrw,is_l,is_h,is_load,use_ammo,is_rch,is_spcl,is_slvd
+68,club,0,1,4,bludgeoning,0,0,0,0,0,0,,0,1,0,0,0,0,0,0
+69,dagger,0,1,4,piercing,1,0,0,0,0,20,60,1,1,0,0,0,0,0,0
+70,greatclub,0,1,8,bludgeoning,0,1,0,0,0,0,,0,0,0,0,0,0,0,0
+71,handaxe,0,1,6,slashing,0,0,0,0,0,20,60,1,1,0,0,0,0,0,0
+72,javelin,0,1,6,piercing,0,0,0,0,0,30,120,1,0,0,0,0,0,0,0
+73,light hammer,0,1,4,bludgeoning,0,0,0,0,0,20,60,1,1,0,0,0,0,0,0
+74,mace,0,1,6,bludgeoning,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+75,quarterstaff,0,1,6,bludgeoning,0,0,1,8,0,0,0,0,0,0,0,0,0,0,0
+76,sickle,0,1,4,slashing,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0
+77,spear,0,1,6,piercing,0,0,1,8,0,20,60,1,0,0,0,0,0,0,0
+78,"crossbow, light",0,1,8,piercing,0,1,0,0,1,80,320,0,0,0,1,1,0,0,0
+79,dart,0,1,4,piercing,1,0,0,0,0,20,60,1,0,0,0,0,0,0,0
+80,shortbow,0,1,6,piercing,0,1,0,0,1,80,320,0,0,0,0,1,0,0,0
+81,sling,0,1,4,bludgeoning,0,0,0,0,1,30,120,0,0,0,0,1,0,0,0
+82,battleaxe,1,1,8,slashing,0,0,1,10,0,0,0,0,0,0,0,0,0,0,0
+83,flail,1,1,8,bludgeoning,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+84,glaive,1,1,10,slashing,0,1,0,0,0,0,0,0,0,1,0,0,1,0,0
+85,greataxe,1,1,12,slashing,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0
+86,greatsword,1,2,6,slashing,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0
+87,halberd,1,1,10,slashing,0,1,0,0,0,0,0,0,0,1,0,0,1,0,0
+88,lance,1,1,12,piercing,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0
+89,longsword,1,1,8,slashing,0,0,1,10,0,0,0,0,0,0,0,0,0,0,0
+90,maul,1,2,6,bludgeoning,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0
+91,morningstar,1,1,8,piercing,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+92,pike,1,1,10,piercing,0,1,0,0,0,0,0,0,0,1,0,0,1,0,0
+93,rapier,1,1,8,piercing,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+94,scimitar,1,1,6,slashing,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0
+95,shortsword,1,1,6,piercing,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0
+96,trident,1,1,6,piercing,0,0,1,8,0,20,60,1,0,0,0,0,0,0,0
+97,war pick,1,1,8,piercing,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+98,warhammer,1,1,8,bludgeoning,0,0,1,10,0,0,0,0,0,0,0,0,0,0,0
+99,whip,1,1,4,slashing,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0
+100,blowgun,1,1,1,piercing,0,0,0,0,1,25,100,0,0,0,1,1,0,0,0
+101,"crossbow, hand",1,1,6,piercing,0,0,0,0,1,30,120,0,1,0,1,1,0,0,0
+102,"crossbow, heavy",1,1,10,piercing,0,1,0,0,1,100,400,0,0,1,1,1,0,0,0
+103,longbow,1,1,8,piercing,0,1,0,0,1,150,600,0,0,1,0,1,0,0,0
+104,net,1,0,0,special,0,0,0,0,0,5,15,1,0,0,0,0,0,1,0

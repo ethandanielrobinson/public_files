@@ -1,0 +1,2 @@
+Expertese: "acrobatics", "nature", "perception", "slight of Hand", "stealth", "survival"
+Prof: "athletics", "deception", "persuasion"

@@ -1,0 +1,13 @@
+{
+ "name": "Filia Kosta",
+ "image": "filia_kosta.png",
+ "db": "databases/filia_kosta_database.db",
+ "color": "#8C1D40",
+ "conditions": [],
+ "lang": [
+  "common",
+  "elvish"
+ ],
+ "exhaustion": 0,
+ "pb": 2
+}

@@ -1,0 +1,19 @@
+id,nm,lq_cap,sd_cap,car_cap,ammo_a,amt_a,ammo_b,amt_b
+159,backpack,,1,30,,,,
+160,barrel,5120,4,,,,,
+161,basket,,2,40,,,,
+162,bottle,24,,,,,,
+163,bucket,384,0.5,,,,,
+164,chest,,12,300,,,,
+165,flask,16,,,,,,
+166,tankard,16,,,,,,
+167,jug,128,,,,,,
+168,pitcher,128,,,,,,
+169,iron pot,128,,,,,,
+170,pouch,,0.2,6,180,20,178,50
+171,sack,,1,30,,,,
+172,vial,4,,,,,,
+173,waterskin,64,,,,,,
+174,"case, crossbow bolt",,,,179,20,,
+175,"case, map or scroll",,,,47,10,48,5
+176,quiver,,,,177,20,,

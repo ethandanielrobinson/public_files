@@ -1,0 +1,10 @@
+{
+ "name": "Drusus Scrutatorum",
+ "image": "drusus_scrutatorum.png",
+ "db": "databases\\drusus_scrutatorum_database.db",
+ "color": "#154734",
+ "conditions": [],
+ "lang": [],
+ "exhaustion": 0,
+ "pb": 2
+}
