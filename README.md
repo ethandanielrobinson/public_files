@@ -8,16 +8,15 @@ I am Ethan D. Robinson, an Applied Physics graduate from Brigham Young Universit
 ## Repository Structure
 This repository is organized into the following sections:
 
-### 1. **Scientific Computing & Data Analysis**
+### 1. **Materials Science and MuSR Data**
 - **Muon-Spin Relaxation Analysis** – Scripts used to analyze experimental data from TRIUMF, involving numerical solutions to quantum equations.
 - **Statistical Data Processing** – Examples of statistical modeling and data visualization using NumPy, SciPy, and Matplotlib.
 
-### 2. **Automation & Scripting**
-- **Batch Processing Tools** – Scripts designed to automate repetitive tasks, such as file management and data conversion.
-- **Web Scraping & API Integration** – Python scripts that extract and process data from web sources using libraries like BeautifulSoup and Requests.
-
+### 2. **Scientific Analysis and Computational Physics**
+- **Data Analysis and Step Forward Programing** – Simple programs designed to solve physical systems created during my studies at BYU.
+- 
 ### 3. **Software & Game Development**
-- **D&D Character Manager** – A JSON and SQLite3-based system for managing character data across multiple scripts.
+- **D&D Character Manager** – A JSON and SQLite3-based system for managing character data across multiple scripts. Primarily used as a testbed to help with Object Oriented Programing (OOP) concepts and applications.
 - **Small-Scale Python Applications** – Various utility programs showcasing object-oriented programming and modular code design.
 
 ## Technologies Used
