@@ -28,7 +28,7 @@ This repository is organized into the following sections:
 ## Getting Started
 To explore the projects, simply clone this repository:
 ```sh
-git clone https://github.com/ethandrobinson/python-portfolio.git
+git clone https://github.com/ethandanielrobinson/public_files.git
 ```
 Each project has its own README file with setup instructions and explanations.
 
