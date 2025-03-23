@@ -1595,7 +1595,8 @@ class Character:
             in_quantity (int): An integer representing the quantity of that Equipment class
                 to be added
         Returns:
-            exists (bool): True if the objects was already in the instance, False if it was not.
+            OUT (Tuple[bool, int]): True if the objects was already in the instance, False if it was not.  The
+                second element of the tuple is the new quantity.
         """
         # We define an interior function to help us update lists
         def add_elements(inpt_lst: list, in_i: Equipment, in_q: int):
@@ -1607,31 +1608,34 @@ class Character:
                 in_i (Equipment): The ingoing Equipment instance.
                 in_q (in_q): The quantity of "in_i" we want to add.
             Returns:
-                OUT (tuple): A tuple.  The first part of the tuple is whether the object
-                    was found in the list.  The second part is the updated list.
+                OUT (Tuple[bool, int, List[Tuple[Equipment, int]]]): A tuple.  
+                    The first part of the tuple is whether the object was found in the list.  
+                    The second part is updated quantity.  The third one is the new list.
             """
             found, idx = find_in_first_entries(inpt_lst, in_i.id)
             if found:
                 inpt_lst[idx][1] += in_q
+                n_qnty: int = inpt_lst[idx][1]
             else:
                 inpt_lst.append([in_i, in_q])
-            return found, inpt_lst
+                n_qnty :int = in_q
+            return found, n_qnty, inpt_lst
         
-        exists, self.main_inv = add_elements(self.main_inv, in_inst, in_quantity)
+        exists, new_qnty, self.main_inv = add_elements(self.main_inv, in_inst, in_quantity)
         # Then check the weapon list
         if isinstance(in_inst, Weapon):
-            self.weapon_inv = add_elements(self.weapon_inv, in_inst, in_quantity)[1] # want the second element of the 
+            self.weapon_inv = add_elements(self.weapon_inv, in_inst, in_quantity)[2] # want the third element of the 
             # tuple
         # check the armor inventory
         if isinstance(in_inst, Armor):
-            self.armor_inv = add_elements(self.armor_inv, in_inst, in_quantity)[1]
+            self.armor_inv = add_elements(self.armor_inv, in_inst, in_quantity)[2]
         # check the container inventory
         if isinstance(in_inst, Container):
-            self.container_inv = add_elements(self.container_inv, in_inst, in_quantity)[1]
+            self.container_inv = add_elements(self.container_inv, in_inst, in_quantity)[2]
         # check the clothing inventory
         if isinstance(in_inst, Clothing):
-            self.clothing_inv = add_elements(self.container_inv, in_inst, in_quantity)[1]
-        return exists
+            self.clothing_inv = add_elements(self.container_inv, in_inst, in_quantity)[2]
+        return exists, new_qnty
 
     def remove_from_inventory(self, item_id: int, del_qty: int)->bool:
         """
@@ -1639,37 +1643,41 @@ class Character:
         Parameters:
             item_id (int): The id of the item we want to remove.
             del_qty (int): The quantity of the item we want to remove.
+        Raises:
+            ValueError: Object is not found in inventory.
         Returns:
-            exists (bool): False if the object line was deleted, True if not.
+            OUT (Tuple[bool, int]): False if the object line was deleted, True if not.  The second element is the remaining quantity
         """
         # search for the id in the index
-        def delete_elements(in_list: list, in_i: int, in_qty: int):
+        def delete_elements(in_list: List[Tuple[Equipment, int]], in_i: int, in_qty: int):
             """
             List must be of 2 element tuples. An internal function.
             Parameters:
-                in_list (list): An inventory list.
+                in_list (List[Tuple[Equipment, int]]): An inventory list.
                 in_i (int): the id of the object we are looking for
                 in_qty (int): the quantity we want to remove
             Returns:
-                OUT (tuple): The first element of the tuple is wether the object still exists in
-                    the inventory (True) or not (False).  The second element is the updated
-                    list.
+                OUT (Tuple[bool, int, Tuple[Equipment, int]]): The first element of the tuple is wether the object still exists in
+                    the inventory (True) or not (False).  The second element is is the updated quanitity.  The third
+                    is the updated list.
             """
-            ex = True #initialise exists
+            ex = True #initialise exist
+            n_qty = -1 # initillize this as -1, will only return this if the object is not in the inventory
             found, idx = find_in_first_entries(in_list, in_i)
             if found:
                 in_list[idx][1] -= in_qty # calculate our new quantity
+                n_qty = in_list[idx][1]
                 if in_list[idx][1] <= 0: # check if the quantity is zero
                     in_list.pop(idx) # if it is zero, remove the element
                     ex = False # set exists to false
-            return ex, in_list # and return the list
+            return ex, n_qty, in_list # and return the list
         
-        exists, self.main_inv = delete_elements(self.main_inv, item_id, del_qty) # Check main inventory
-        self.weapon_inv = delete_elements(self.weapon_inv, item_id, del_qty)[1] # Check weapon inventory
-        self.armor_inv = delete_elements(self.armor_inv, item_id, del_qty)[1] # Check armor inventory
-        self.container_inv = delete_elements(self.container_inv, item_id, del_qty)[1] # Check contianer inventory
-        self.clothing_inv = delete_elements(self.clothing_inv, item_id, del_qty)[1] # Check clothing inventory
-        return exists
+        exists, new_qnty, self.main_inv = delete_elements(self.main_inv, item_id, del_qty) # Check main inventory
+        self.weapon_inv = delete_elements(self.weapon_inv, item_id, del_qty)[2] # Check weapon inventory
+        self.armor_inv = delete_elements(self.armor_inv, item_id, del_qty)[2] # Check armor inventory
+        self.container_inv = delete_elements(self.container_inv, item_id, del_qty)[2] # Check contianer inventory
+        self.clothing_inv = delete_elements(self.clothing_inv, item_id, del_qty)[2] # Check clothing inventory
+        return exists, new_qnty
 
     def search_inventory(self, in_id: int):
         """

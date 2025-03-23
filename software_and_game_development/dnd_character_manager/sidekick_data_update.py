@@ -3,6 +3,7 @@ import sqlite3 # Allow us to interact with SQLite files
 import json # Allows us to interact with JSON files
 import tkinter as tk
 import time
+from typing import List, Tuple
 
 def timing_decorator(func):
     def wrapper(*args, **kwargs):
@@ -200,12 +201,12 @@ def find_id(in_cursor: sqlite3.Cursor, in_table: str, in_str: str)->int:
         else:
             display_val_error(f"No entry found for {in_str} in {in_table}.")
 
-def retrieve_id_list(database_name: str, table_name: str, )->list:
+def retrieve_id_list_from_db(in_cursor: sqlite3.Cursor, table_name: str, )->list:
     """
     A function that returns a list of all id numbers in an database table.  Does not
     use a pre-defined cursor. User Function.
     Parameters:
-        database_name (str): The name of the database we wish to search, ether a character db or DB_STR
+        in_cursor (sqlite3.Cursor): The cursor we are using to search the database
         table_name (str): The name of the table we want to retrieve.
     Raises:
         TypeError: Wrong form of input.
@@ -215,22 +216,17 @@ def retrieve_id_list(database_name: str, table_name: str, )->list:
         table.
     """
     # make sure we have good input wtih TypeErrors
-    if not (database_name in [DB_STR, char.db]): # only certain strings are allowed, check the database master
+    if not isinstance(in_cursor, sqlite3.Cursor): # only certain strings are allowed, check the database master
         display_type_error("The database name must be defined.")
     if not isinstance(table_name, str):
         display_type_error("The table name must be in the form of a string.")
-    # Reconnect to the character database
-    conn = get_connection(database_name)
-    cursor = conn.cursor()
     # Fetch all ids from the character_weapons table
     out_list = []  # Initialize out_list before the try block
     try:
-        cursor.execute(f"SELECT id FROM {table_name};")
-        out_list = [row[0] for row in cursor.fetchall()]  # Store names in an array of integers
+        in_cursor.execute(f"SELECT id FROM {table_name};")
+        out_list = [row[0] for row in in_cursor.fetchall()]  # Store names in an array of integers
     except sqlite3.Error as e:
         display_imp_error(f"Unable to access database: {e}")
-    finally:
-        conn.close() # Close the connection, which we want to ensure is correct
     return out_list # return the list generated
 
 # Non-User Function
@@ -273,27 +269,6 @@ def clear_table(del_curs: sqlite3.Cursor, table_name: str):
     except sqlite3.Error as e:
         display_type_error(f"Error clearing table: {e}")
 
-#### CHARACTERS SEARCH FUNCTION================================================
-def search_inventory(in_list: list, item_id: int):
-    """
-    A function to search an characters inventory, provided as a list of tuples, 
-    usualy one of the inventories defined in the charachter instance, and not in the SQLite3 database.
-    Parameters:
-        in_list (list): The inventory we want to search.
-        item_id (int): The id of the Equipment instance we want to find.
-    Raises:
-        TypeError: Wrong type of arguments.
-    Returns:
-        OUT (tuple): Is the Equipment in the inventory, the index of the Equipment (-1 if it's not there)
-    """
-    if not isinstance(item_id, int): # make sure the input is good
-        display_type_error("Incorrect input entered!")
-    for index, (object, _) in enumerate(in_list): # we need the actual Equipment instance, not the quantity
-        if not isinstance(object, fsu.Equipment): # make sure the list is good.
-            display_type_error("Incorrect input entered!")
-        if object.id == item_id: # check if the object is an equipment instance in the inventory
-            return True, index # if it is there, return true and the index
-        return False, -1 # if it is not there, return false and -1
 
 #########################################################################################
 #### JSON FUNCTIONS #####################################################################
@@ -353,7 +328,6 @@ def print_result(in_int: int, in_str: str):
             in_int (int): The integer key we wish to display a message for.
             in_str (str): The database key we are updating.
         """
-        print("Function print_result ran.")
         if in_int == 0:
             print(f"{in_str} database updated")
         elif in_int == 2:
@@ -402,7 +376,7 @@ def update_qty_db(up_curs: sqlite3.Cursor, location: str, item_id: int, up_quant
     Parameters:
         up_curs (sqlite.Cursor): A Cursor that forms our connection to the database.
         location (str): A string determining where in the database the equipment is to be placed. "base", "weapon", "armor" and so on, along with the contianer sub-inventories.
-        up_obj (fsu.Equipment): An Equipment instance (or child) that we want to place in the database.
+        item_id (int): The id of the object we are adding more of.
         up_quant (int): The quantity of that Equipment we wish to update.
     Raises:
         ValueError: No row found with the specified id.
@@ -413,6 +387,8 @@ def update_qty_db(up_curs: sqlite3.Cursor, location: str, item_id: int, up_quant
     cmd_str = f"UPDATE {ret_data(location, False)} SET qnty = ? WHERE id = ?"
     try: # Attempt to insert the information
         up_curs.execute(cmd_str, (up_quant, item_id))
+        #### TEST LINE
+        print(f"update_qty_db function ran on {ret_data(location, False)}")
         if up_curs.rowcount == 0:
             display_val_error(f"No record found with id {item_id}, update failed.")
     except sqlite3.Error as e: # and if an exception occurs
@@ -457,7 +433,7 @@ def add_eq_char_db(in_curs: sqlite3.Cursor, in_o: fsu.Equipment, in_q: int, inve
     Parameters:
         in_curs (sqlite.Cursor): A Cursor that forms our connection to the database.
         in_o (fsu.Equipment): An Equipment instance (or child) that we want add to the character.
-        in_q (int): The quantity of that Equipment we wish to add to the character.
+        in_q (int): The new quantity we want the object to have (not the quantity to add).
         inventory_st (str): A string describing if we are placing the script in the primary inventory,
             or a container.
     """
@@ -480,7 +456,7 @@ def add_eq_char_db(in_curs: sqlite3.Cursor, in_o: fsu.Equipment, in_q: int, inve
         print("Fix This Later")
 
 # Non-User Function
-def up_qty_char_db(in_curs: sqlite3.Cursor, in_id: int, in_q: int, inventory_str: str = "primary")->None:
+def up_qty_char_db(in_curs: sqlite3.Cursor, in_id: int, in_q: int, inventory_str: str)->None:
     """
     A Function to manage the update_qty_db function, ensuring that changes are propigated to the
     proper subclass inventories.  Requires that the active inventory has been updated first.
@@ -498,11 +474,13 @@ def up_qty_char_db(in_curs: sqlite3.Cursor, in_id: int, in_q: int, inventory_str
         # We then check the subclass inventories defined in the charachter instance
         # We use the fact that the character instance should have been updated already.
         for locs in ["weapon", "armor", "clothing"]:
-            lst = ret_data(locs, True) # retrive the information from the active database
-            if search_inventory(lst, in_id)[0]: # we search each inventory respectably for the id
-                ress = update_qty_db(in_curs, locs, in_id, in_q) # if we find the id in an inventory, we update
-                print(ress, locs) # print the results
-                break # and end the for loop
+            lst : List[Tuple[fsu.Equipment, int]] = ret_data(locs, True) # retrive the information from the active database
+            # We create a dict (faster than linear search)
+            id_list = [obj.id for (obj,_) in lst]
+            if id_list: # make sure the list isn't empty
+                if in_id in id_list:
+                    ress = update_qty_db(in_curs, locs, in_id, in_q)
+                    print(ress, locs) # print the results
     else:
         print("Fix This Later")
 
@@ -530,7 +508,30 @@ def add_skill_char_db(in_curs: sqlite3.Cursor, sk_id: int, sk_nm: str, sk_expt: 
         display_imp_error(f"SQLite error: {e}")
 
 #########################################################################################
-####################### OLD FUNCTIONS ####################################################
+####################### DATABASE SEARCH FUNCTIONS #######################################
+#########################################################################################
+# Non-User Function
+def retrive_equipment_master():
+    """
+    This is a rarely called function to retrive the entire equipment master list as an 
+    name: id dictionary.
+    Returns:
+        outlist (dict{str: int}): The full equipment dictionary, with names as key and id as
+        data.
+    """
+    global char # define global char
+
+    # Open connection to database
+    conn = get_connection(DB_STR)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id, nm FROM equipment_master")
+    out_list = {row[1]: row[0] for row in cursor.fetchall()}
+    conn.close() # Close the connection
+    return out_list
+
+#########################################################################################
+####################### OLD FUNCTIONS ###################################################
 #########################################################################################
 
 # NON USER FUNCTION
@@ -699,13 +700,14 @@ def add_equipment(in_obj: fsu.Equipment, in_qnty: int, loc: str = "primary")->No
     conn = get_connection(char.db) # Define our cursor
     curs_up = conn.cursor()
 
+    in_inventory, new_quantity = char.add_to_inventory(in_obj, in_qnty)
     # first we need to add the equipment to the character object.
-    if char.add_to_inventory(in_obj, in_qnty): # our database update depends on the outcome
+    if in_inventory: # our database update depends on the outcome
         # we only need the objects id here if the object allready exists
-        up_qty_char_db(curs_up, in_obj.id, in_qnty, inventory_str=loc) 
+        up_qty_char_db(curs_up, in_obj.id, new_quantity, inventory_str=loc) 
     else:
         # We need to insert a whole new Equipment instance
-        add_eq_char_db(curs_up, in_obj, in_qnty, inventory_str=loc) # ensure that we connecting to the right inventory
+        add_eq_char_db(curs_up, in_obj, new_quantity, inventory_str=loc) # ensure that we connecting to the right inventory
     
     conn.commit() # Commit and close our database.
     conn.close()
@@ -731,9 +733,13 @@ def delete_equipment(del_id: int, del_qnty: int, loc: str = "primary"):
     conn = get_connection(char.db) # Get our connection
     curs_up = conn.cursor() # define our cursor
 
-    if char.remove_from_inventory(del_id, del_qnty):
+    # NEED TO DO SOME WORK HERE
+
+    in_inventory, new_quantity = char.remove_from_inventory(del_id, del_qnty)
+
+    if in_inventory:
         # if we allready have an instance of that equipment in the inventory
-        up_qty_char_db(curs_up, del_id, -del_qnty, inventory_str=loc) # del_qnty must be negative here.
+        up_qty_char_db(curs_up, del_id, new_quantity, inventory_str=loc) # del_qnty must be negative here.
     else: # the item line needs to be removed wholesale
         del_from_db(curs_up, del_id, inventory_str=loc)
     
@@ -746,7 +752,7 @@ def add_cond(manual:bool = False, input: tuple = (None, None)):
     Parameters:
         manual (bool, optional): Do we want to enter the information manualy or using the dialoge
             box. The default is False.
-        inpt_a (tuple, optional): The condition we want to input, in the form of an (int, str) tuple,
+        input (tuple, optional): The condition we want to input, in the form of an (int, str) tuple,
             where the int is the condition database id, and the string is the condition name. The default is 
             (None, None)
     Raises:
@@ -1032,7 +1038,7 @@ def damage(dam: int):
         char.cur_hp -= dam # reduce the current hp by the remaining damage
         if char.cur_hp <= 0: # check that we haven't fallen unconsious
             char.cur_hp = 0
-            add_cond(manual=True, input_a = (14, "unconscious")) # won't add it if allready unconsious.
+            add_cond(manual=True, input = (14, "unconscious")) # won't add it if allready unconsious.
             print('yer dead partner!') # TEMPORARY, TRADITION
 
     # Now we write to the SQLite3 character Database

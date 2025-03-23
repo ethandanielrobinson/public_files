@@ -13,6 +13,7 @@ os.chdir(script_dir)
 
 import tkinter as tk
 from tkinter import simpledialog
+from tkinter import ttk
 import function_storage_update as fss
 os.chdir(script_dir) # ensure we are in the correct folder.
 import sidekick_data_update as sd
@@ -237,7 +238,7 @@ def health_labels(root : tk.Frame, cur_health: tk.IntVar, max_health: tk.IntVar,
         mas_health (tk.IntVar): An IntVar Object contianing the max health.
         color (str): The background color of the frame.
     Returns:
-        labels (tuple): a tuple containing the health labels.
+        labels (Tuple[tk.Label]): a tuple containing the health labels.
     """
     labels = []
     # Current Health Label
@@ -768,3 +769,58 @@ def conbutton(root: tk.Frame, color: str):
     buttons.append(buttonb)
     
     return buttons # as a tupple
+
+def add_eq_window(color: str):
+    """
+    A function to open the equipment modificaiton pane.
+    Parameters:
+        color (str): The character's primary color, expressed as a hex code.
+    Raises:
+        KeyError: When the entered equipment is not in the master dictionary.
+    """
+    # retrive equpment as a dictionary
+    eq_dict = sd.retrive_equipment_master()
+
+    def commit(in_stv: tk.StringVar):
+        """
+        A fucnction to commmit the equipment to the inventory
+        Parameters:
+            in_stv (tk.StringVar): the StringVar object taken from the combobox.
+        Raises:
+            KeyError: Equipment entered is not in the master database.
+        """
+        in_str = in_stv.get() # get the string
+        try: # Attempt to retrive the id from the dict.
+            print(f"Added {in_str}")
+            in_id = eq_dict[in_str]
+            in_equipment = sd.retrive_single_equip(in_id)
+            sd.add_equipment(in_equipment, 1)
+            eq_win.destroy() # close the window.
+        except KeyError:
+            fss.error_box("Equipment not defined? Did you want to create a custom object?")
+
+    eq_win = tk.Tk() # Create the Tk window
+    eq_win.title("Add Equipment")
+
+    # Window Construction
+    user_lab = tk.Label(eq_win, text = "Choose equipment to add:", font = ("Times New Roman", 12), height = 1, # In charachters
+                        justify=tk.CENTER)
+    # then create the menu
+    choice = tk.StringVar()
+    conchosen = ttk.Combobox(eq_win, width = 20, textvariable = choice)
+    conchosen['values'] = list(eq_dict.keys()) # Retrieve the keys of the dictionary as a list
+    # And the commit button
+    com_but = tk.Button(eq_win, text = "Commit equipment to inventory", font = ("Times New Roman", 12),
+                        command = lambda c = choice: commit(c),
+                        height = 1, cursor = "hand2", bg = color, fg = "#FFFFFF", justify=tk.CENTER,relief=tk.RAISED)
+    
+    # And populate the window
+    user_lab.pack(padx = 5, pady = 5)
+    conchosen.pack(padx = 5, pady = 5)
+    com_but.pack(padx = 5, pady = 5)
+    eq_win.mainloop() # run the window
+
+    #### TESTING AREA ################################################################################################
+
+
+

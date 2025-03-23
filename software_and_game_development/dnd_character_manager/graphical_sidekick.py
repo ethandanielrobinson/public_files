@@ -14,9 +14,9 @@ import tkinter as tk
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import threading
-import json
 from time import sleep
 from time import time
+from typing import List, Tuple
 import os # Allows us to change directories
 
 # Get the directory containing the script
@@ -74,8 +74,12 @@ class FileHandler(FileSystemEventHandler):
     """
     A Class to update the local file data if the JSON or SQLite3 Database is changed.
     Parameters:
-        FileSystemEventHandler: The input.
+        FileSystemEventHandler: The Parent Class.
     """
+    def __init__(self, ui_update_callback):
+        super().__init__()
+        self.ui_update_callback = ui_update_callback  # Store callback function
+    
     last_modified_time = 0  # Store the last modification time
     
     def on_modified(self, event):
@@ -88,7 +92,7 @@ class FileHandler(FileSystemEventHandler):
                 print(f"File Changed: {event.src_path}. Reloading...")
                 # And grab the updated information.
                 character.cur_hp, character.max_hp, character.temp_hp, character.conditions = sd.update_char()
-                update_ui()
+                self.ui_update_callback(main_win)
 
 
 def add_string(vars: list[str]):
@@ -109,379 +113,429 @@ def add_string(vars: list[str]):
     return output
     
 
-def update_ui():
-    window.after(0, _safe_update_ui)
 
-def _safe_update_ui():
-    """This function runs on the main Tkinter thread."""
-    hit_points_current.set(character.cur_hp)
-    hit_points_max.set(character.max_hp)
-    hit_points_temp.set(character.temp_hp)
-    cond_current.set(add_string([cond[1] for cond in character.conditions]))  
-    print(f"Updated UI: {character.name}, HP: {character.cur_hp}/{character.max_hp}")
-
-
-def start_observer():
+def start_observer(ui_update_callback):
     observer = Observer()
-    handler = FileHandler()
+    handler = FileHandler(ui_update_callback)
 
     # Monitor both the character JSON file's directory and the databases directory
     observer.schedule(handler, path=sidefiles_path, recursive=False)  # Watches the JSON file directory
     observer.schedule(handler, path=os.path.join(sidefiles_path, "databases"), recursive=False)  # Watches the database directory
     
     observer.start()
-
-    try:
-        while True:
-            sleep(1)  # Keep the observer running
-    except KeyboardInterrupt:
-        observer.stop()
-    observer.join()
+    return observer
 
 
-# Start the observer in a background thread
-observer_thread = threading.Thread(target=start_observer, daemon=True)
-observer_thread.start()
+# EQUIPMENT BUTTON ===========================================================
+def equipment_press(in_root: tk.Tk):
+    """
+    Function that defines what to do when the add equipment button is pressed.
+    Parameters:
+        in_root (tk.Tk): The primary character window.
+    """
+    global character # define our global character
+    in_root.destroy() # Destroy current char window
+    tfs.add_eq_window(character.color) # open equipment modification pane
+    character = sd.retrive_char()
+    main_win, update_ui= create_main_window()
 
-#create main window
-window = tk.Tk()
-window.config(bg = "#FFFFFF") # Set the background of the window to be BYU slate grey
-
-window.title(character.name) # Window Name
-
+    # Start the observer in a background thread
+    observer = start_observer(update_ui)
+    observer_thread = threading.Thread(target=observer.join, daemon=True)
+    observer_thread.start()
 
 
-#%% CREATING THE DATA =========================================================
+    main_win.mainloop()
 
-#------------------------------------------------------------------------------
-#### FRAME 1
-#------------------------------------------------------------------------------
 
-# Make sure we have the correct name
-name_var = tk.StringVar()
-name_var.set(character.name)
-
-# List of the abreviations for all the atributes.  VERY USEFUL
-atributetitle = ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
-atributelist = ["stre", "dext", "cons", "inte", "wisd", "char"]
-
-# Initialize the list of atrubute ints, then fill it with the corrct
-# date from the charachter dictionary.  Atributes Visible is the name
-at_vis = []
-for atr in atributelist:
-    statone = getattr(character, atr) # grab the atributes from the character.
-    at_vis.append(statone)
+def create_main_window():
     
-# Generate the correct modifiers to be placed below the atributes
-at_mod = [] # Initialize the array
-for n in range(6):
-    modone = at_vis[n] # Get the correct data
-    modtwo = (modone - 10) // 2 # find the modifier
-    at_mod.append(modtwo) # add to list
+    def _safe_update_ui():
+        """
+        This function runs on the main Tkinter thread.
+        """
+        global character
+        hit_points_current.set(character.cur_hp)
+        hit_points_max.set(character.max_hp)
+        hit_points_temp.set(character.temp_hp)
+        cond_current.set(add_string([cond[1] for cond in character.conditions]))  
+        print(f"Updated UI: {character.name}, HP: {character.cur_hp}/{character.max_hp}")
 
-# Bring in the charachter image (from Geeks to Geeks)
-# adding image (remember image should be PNG and not JPG)
-img_a = tk.PhotoImage(file = character.image)
-img = img_a.subsample(3, 3)
+    def _update_ui(root: tk.Tk):
+        """
+        A function to manage the update_ui function.
+        """
+        root.after(0, _safe_update_ui)
 
-#------------------------------------------------------------------------------
-#### FRAME 2
-#------------------------------------------------------------------------------
+    #create main window
+    window = tk.Tk()
+    window.config(bg = "#FFFFFF") # Set the background of the window to be BYU slate grey
 
-# Create IntVar objects for hit points
-hit_points_max = tk.IntVar(value=character.max_hp)
-hit_points_current = tk.IntVar(value=character.cur_hp)
-hit_points_temp = tk.IntVar(value=character.temp_hp)
+    window.title(character.name) # Window Name
 
-# Import weapons
-wea_array = []
-for weapon, _ in character.weapon_inv: #check the weapon inventory and add the names
-    tkweaponstr = tk.StringVar(value = weapon.name)
-    weapon_id = weapon.id # an int
-    weapon_l = bool(weapon.is_light) # FIX LATER
-    wea_array.append((tkweaponstr, weapon_id, weapon_l))
+    ###############################################################################
+    #### CREATING THE DATA ########################################################
+    ###############################################################################
 
-armor_list = [armor.name for armor, _ in character.armor_inv] # creates a list of strings to create the armor list
+    #------------------------------------------------------------------------------
+    #### FRAME 1
+    #------------------------------------------------------------------------------
 
-# we also need to check if the character has a shield
-has_shield = True if character.search_inventory(2) else False
+    # Make sure we have the correct name
+    name_var = tk.StringVar()
+    name_var.set(character.name)
 
-#------------------------------------------------------------------------------
-#### FRAME 3
-#------------------------------------------------------------------------------
+    # List of the abreviations for all the atributes.  VERY USEFUL
+    atributetitle = ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
+    atributelist = ["stre", "dext", "cons", "inte", "wisd", "char"]
 
-# Combine both the expterise skill list and the proficiancy skill list
-# Then putting them into an array of StringVars
-skill_list = []
-skill_insts = sd.skill_list # the total list of skills from the sd file.
-for skill in skill_insts:
-    skill_var = tk.IntVar(value = skill.id)
-    skill_list.append(skill_var)
+    # Initialize the list of atrubute ints, then fill it with the corrct
+    # date from the charachter dictionary.  Atributes Visible is the name
+    at_vis = []
+    for atr in atributelist:
+        statone = getattr(character, atr) # grab the atributes from the character.
+        at_vis.append(statone)
+        
+    # Generate the correct modifiers to be placed below the atributes
+    at_mod = [] # Initialize the array
+    for n in range(6):
+        modone = at_vis[n] # Get the correct data
+        modtwo = (modone - 10) // 2 # find the modifier
+        at_mod.append(modtwo) # add to list
 
-# Conditions display
-cond_current = tk.StringVar()
-cond_str = add_string([cond[1] for cond in character.conditions])
-cond_current.set(cond_str)        
+    # Bring in the charachter image (from Geeks to Geeks)
+    # adding image (remember image should be PNG and not JPG)
+    # Ensure the image file exists and is accessible
+    image_path = os.path.join(sidefiles_path, character.image)
+    if not os.path.exists(image_path):
+        raise FileNotFoundError(f"Image file not found: {image_path}")
+    window.img_a = tk.PhotoImage(file=image_path)  # Store reference in the window object
+    window.img = window.img_a.subsample(3, 3)
 
-#%% CREATING THE MASTER FRAMES ================================================
-a_and_p = tk.Frame(window, bg = "#7C878E") # Atributes and Photo
-a_and_p.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+    #------------------------------------------------------------------------------
+    #### FRAME 2
+    #------------------------------------------------------------------------------
 
-# Weapons and Armor Class
-we_and_ac = tk.Frame(window, bg = character.color)
-we_and_ac.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+    # Create IntVar objects for hit points
+    hit_points_max = tk.IntVar(value = character.max_hp)
+    hit_points_current = tk.IntVar(value = character.cur_hp)
+    hit_points_temp = tk.IntVar(value = character.temp_hp)
 
-# Skill Pane
-skill_fr = tk.Frame(window, bg = "#7C878E")
-skill_fr.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+    # Import weapons
+    wea_array = []
+    for weapon, _ in character.weapon_inv: #check the weapon inventory and add the names
+        tkweaponstr = tk.StringVar(value = weapon.name)
+        weapon_id = weapon.id # an int
+        weapon_l = bool(weapon.is_light) # FIX LATER
+        wea_array.append((tkweaponstr, weapon_id, weapon_l))
 
-#%% CREATING THE LABELS =======================================================
+    armor_list = [armor.name for armor, _ in character.armor_inv] # creates a list of strings to create the armor list
 
-#------------------------------------------------------------------------------
-#### Atributes and Photo
-#------------------------------------------------------------------------------
-# and generate the name label
-name = tfs.titlelabel(a_and_p, name_var, character.color)
+    # we also need to check if the character has a shield
+    has_shield = True if character.search_inventory(2) else False
 
-# and the Array of Atribute Labels
-atributelabel = tfs.create_atlabels(a_and_p, atributetitle)
+    #------------------------------------------------------------------------------
+    #### FRAME 3
+    #------------------------------------------------------------------------------
 
-# And create the atributes label (lab stands for label)
-valuebutton = tfs.create_atvalues(a_and_p, at_vis)
+    # Combine both the expterise skill list and the proficiancy skill list
+    # Then putting them into an array of StringVars
+    skill_list = []
+    skill_insts = sd.skill_list # the total list of skills from the sd file.
+    for skill in skill_insts:
+        skill_var = tk.IntVar(value = skill.id)
+        skill_list.append(skill_var)
 
-# We use a new function, create_modvalues
-modlabels = tfs.create_modvalues(a_and_p, at_mod)
+    # Conditions display
+    cond_str = add_string([cond[1] for cond in character.conditions])
+    cond_current = tk.StringVar(value = cond_str)        
 
-# Create an array of spacing frame
-width_space = 15
-height_space = 15
-spacers = []
-for n in range(8):
-    spacer = tk.Frame(a_and_p, 
-                      width = width_space, 
-                      height = height_space, 
-                      bg = "#7C878E")
-    spacers.append(spacer)
-    
-# setting image with the help of label
-imglabel_one = tk.Label(a_and_p, image = img, bg = character.color)
+    ###############################################################################
+    #### CREATING THE FRAMES ######################################################
+    ###############################################################################
 
-#------------------------------------------------------------------------------
-#### Weapons and Armor Class
-#------------------------------------------------------------------------------
-# generate the total health and current health labels
-he_str = tk.StringVar()
-he_str.set("Health")
-healthtitle = tfs.longlabel(we_and_ac, he_str)
-healthlabels = tfs.health_labels(we_and_ac, hit_points_current, hit_points_max, character.color)
-# Temp Health Points value
-tempvalue = tfs.temphealthindicator(we_and_ac, hit_points_temp) 
-# Create the temp health points label
-templabel = tfs.longlabel(we_and_ac, tk.StringVar(value = "Temp Health"))
+    a_and_p = tk.Frame(window, bg = "#7C878E") # Atributes and Photo
+    a_and_p.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-# and the damage controls
-damage_str = tk.StringVar(value = "DAMAGE")
-dambutton = tfs.damagebutton(we_and_ac, damage_str)
-temp_hp_str = tk.StringVar(value = "TEMP HP")
-temp_hp_button = tfs.tempbutton(we_and_ac, temp_hp_str)
-heal_str = tk.StringVar(value = "HEAL")
-heabutton = tfs.healbutton(we_and_ac, heal_str)
+    # Weapons and Armor Class
+    we_and_ac = tk.Frame(window, bg = character.color)
+    we_and_ac.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-# Now for the Weapons title
-we_str = tk.StringVar()
-we_str.set("Weapons")
-wea_title = tfs.longlabel(we_and_ac, we_str)
+    # Skill Pane
+    skill_fr = tk.Frame(window, bg = "#7C878E")
+    skill_fr.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
 
-# And the Weapons list
-wea_list = tfs.weaponbutton(we_and_ac, wea_array)
+    ###############################################################################
+    #### CREATING THE LABELS ######################################################
+    ###############################################################################
 
-# Next the Armor title
-ar_str = tk.StringVar()
-ar_str.set("Armor Class")
-ar_title = tfs.longlabel(we_and_ac, ar_str)
+    #------------------------------------------------------------------------------
+    #### Atributes and Photo
+    #------------------------------------------------------------------------------
+    # and generate the name label
+    name = tfs.titlelabel(a_and_p, name_var, character.color)
 
-# datatype of menu text 
-ar_but_list = tfs.armordrop(we_and_ac, armor_list)
+    # and the Array of Atribute Labels
+    atributelabel = tfs.create_atlabels(a_and_p, atributetitle)
 
-# and a checkbox for the shield that will only be placed if the character has a sheild
-shield_check = tfs.equipcheck(we_and_ac, incolor = "#CCCCCC", 
-                              fontcolor = "#202020")
+    # And create the atributes label (lab stands for label)
+    valuebutton = tfs.create_atvalues(a_and_p, at_vis)
 
-#------------------------------------------------------------------------------
-#### Skill Frame
-#-----------------------------------------------------------------------------
-sk_lab = tk.StringVar()
-sk_lab.set("Skill List")
-sk_title = tfs.longlabel(skill_fr, sk_lab)
+    # We use a new function, create_modvalues
+    modlabels = tfs.create_modvalues(a_and_p, at_mod)
 
-# And create the skill buttons themselves (Skill Button List)
-sk_but_list = tfs.skillbutton(skill_fr, skill_list, character.color)
+    # Create an array of spacing frame
+    width_space = 15
+    height_space = 15
+    spacers = []
+    for n in range(8):
+        spacer = tk.Frame(a_and_p, 
+                        width = width_space, 
+                        height = height_space, 
+                        bg = "#7C878E")
+        spacers.append(spacer)
+        
+    # setting image with the help of label
+    imglabel_one = tk.Label(a_and_p, image=window.img, bg=character.color)
 
-# Create a label for the conditions frame
-con_str = tk.StringVar()
-con_str.set("Conditions")
-con_title = tfs.longlabel(skill_fr, con_str)
+    #------------------------------------------------------------------------------
+    #### Weapons and Armor Class
+    #------------------------------------------------------------------------------
+    # generate the total health and current health labels
+    he_str = tk.StringVar()
+    he_str.set("Health")
+    healthtitle = tfs.longlabel(we_and_ac, he_str)
+    healthlabels = tfs.health_labels(we_and_ac, hit_points_current, hit_points_max, character.color)
+    # Temp Health Points value
+    tempvalue = tfs.temphealthindicator(we_and_ac, hit_points_temp) 
+    # Create the temp health points label
+    templabel = tfs.longlabel(we_and_ac, tk.StringVar(value = "Temp Health"))
 
-# The buttons to add and remove a condition
-con_but = tfs.conbutton(skill_fr, character.color)
+    # and the damage controls
+    damage_str = tk.StringVar(value = "DAMAGE")
+    dambutton = tfs.damagebutton(we_and_ac, damage_str)
+    temp_hp_str = tk.StringVar(value = "TEMP HP")
+    temp_hp_button = tfs.tempbutton(we_and_ac, temp_hp_str)
+    heal_str = tk.StringVar(value = "HEAL")
+    heabutton = tfs.healbutton(we_and_ac, heal_str)
 
-# and create the icons to go into the frame.
-con_array = tfs.cond_effects(skill_fr, cond_current)
+    # Now for the Weapons title
+    we_str = tk.StringVar()
+    we_str.set("Weapons")
+    wea_title = tfs.longlabel(we_and_ac, we_str)
 
+    # And the Weapons list
+    wea_list = tfs.weaponbutton(we_and_ac, wea_array)
 
-# And the exit button
-exit_but = tk.Button (skill_fr, 
-                      text = "EXIT", 
-                      command = window.destroy,
-                      font = ("Times New Roman",12),
-                      fg = "#FFFFFF",
-                      bg = "#CC0000",
-                      width = 6,
-                      cursor = "hand2")
+    # Next the Armor title
+    ar_str = tk.StringVar()
+    ar_str.set("Armor Class")
+    ar_title = tfs.longlabel(we_and_ac, ar_str)
 
-#%% PLACING THE LABELS ========================================================
+    # datatype of menu text 
+    ar_but_list = tfs.armordrop(we_and_ac, armor_list)
 
-#------------------------------------------------------------------------------
-#### 1st Frame
-#------------------------------------------------------------------------------
+    # and a checkbox for the shield that will only be placed if the character has a sheild
+    shield_check = tfs.equipcheck(we_and_ac, incolor = "#CCCCCC", 
+                                fontcolor = "#202020")
 
-# and Print out the labels, starting with Row 0
-name.grid(row = 0, column = 0, columnspan = 8, pady = 15)
+    #------------------------------------------------------------------------------
+    #### Skill Frame
+    #-----------------------------------------------------------------------------
+    sk_lab = tk.StringVar()
+    sk_lab.set("Skill List")
+    sk_title = tfs.longlabel(skill_fr, sk_lab)
 
-# ROW 1
-spacers[0].grid(row = 1, column = 0)
-#--- We use a for loop to place all the correct labels
-for n in range(6):
-    colid = n + 1 # Column ID
-    atributelabel[n][1].grid(row = 1, column = colid)
-#-----------------------------------------------------
-spacers[1].grid(row = 1, column = 7)
+    # And create the skill buttons themselves (Skill Button List)
+    sk_but_list = tfs.skillbutton(skill_fr, skill_list, character.color)
 
-# ROW 2
-spacers[2].grid(row = 2, column = 0)
-#------------------------------------
-for n in range(6):
-    colid = n + 1 # Column ID
-    valuebutton[n][1].grid(row = 2, column = colid)
-#------------------------------------
-spacers[3].grid(row = 2, column = 7)
+    # Create a label for the conditions frame
+    con_str = tk.StringVar()
+    con_str.set("Conditions")
+    con_title = tfs.longlabel(skill_fr, con_str)
 
-# ROW 3
-spacers[4].grid(row = 3, column = 0)
-#-----------------------------------
-for n in range(6):
-    colid = n + 1 # Column ID
-    modlabels[n][1].grid(row = 3, column = colid)
-#-----------------------------------
-spacers[5].grid(row = 3, column = 7)
+    # The buttons to add and remove a condition
+    con_but = tfs.conbutton(skill_fr, character.color)
 
-# ROW 4
+    # and create the icons to go into the frame.
+    con_array = tfs.cond_effects(skill_fr, cond_current)
 
-spacers[6].grid(row = 3, column = 0)
-#-----------------------------------
-imglabel_one.grid(row = 4, column = 1, columnspan = 6, pady = 10)
-#-----------------------------------
-spacers[7].grid(row = 3, column = 7)
+    eq_but = tk.Button(skill_fr, text = "Add Equipment", command = lambda w=window: equipment_press(w), 
+                    font = ("Times New Roman", 12), fg="#FFFFFF", 
+                    bg=character.color, width=13, pady = 5, cursor="hand2")
 
-#------------------------------------------------------------------------------
-#### 2nd Frame
-#-----------------------------------------------------------------------------
+    # And the exit button
+    exit_but = tk.Button (skill_fr, 
+                        text = "EXIT", 
+                        command = window.destroy,
+                        font = ("Times New Roman",12),
+                        fg = "#FFFFFF",
+                        bg = "#CC0000",
+                        width = 6,
+                        cursor = "hand2")
 
-# ROW 0
-healthtitle.grid(row = 0, column = 0, columnspan = 3, pady = 15)
+    ###############################################################################
+    #### PLACING THE LABELS #######################################################
+    ###############################################################################
 
-# ROW 1
-# Our health information
-for n in range(3):
-    xspace = 0; # ensure that the actual 2 numbers have the propper buffer
-    if n in [0,2]:
-        xspace = 5
-    healthlabels[n][1].grid(row = 1, column = n, padx = xspace, pady = 10)
+    #------------------------------------------------------------------------------
+    #### 1st Frame
+    #------------------------------------------------------------------------------
 
-# ROW 2
-# place the health modification button
-dambutton.grid(row = 2, column = 0)
-temp_hp_button.grid(row = 2, column = 1)
-heabutton.grid(row = 2, column = 2)
+    # and Print out the labels, starting with Row 0
+    name.grid(row = 0, column = 0, columnspan = 8, pady = 15)
 
-# ROW 3
-# Place the temporary health values
-tempvalue.grid(row = 3, column = 0, pady = 5)
-templabel.grid(row = 3, column = 1, columnspan = 2, pady = 5)
+    # ROW 1
+    spacers[0].grid(row = 1, column = 0)
+    #--- We use a for loop to place all the correct labels
+    for n in range(6):
+        colid = n + 1 # Column ID
+        atributelabel[n][1].grid(row = 1, column = colid)
+    #-----------------------------------------------------
+    spacers[1].grid(row = 1, column = 7)
 
-# R0W 4
-wea_title.grid(row = 4, column = 0, columnspan = 3, pady = 15)
+    # ROW 2
+    spacers[2].grid(row = 2, column = 0)
+    #------------------------------------
+    for n in range(6):
+        colid = n + 1 # Column ID
+        valuebutton[n][1].grid(row = 2, column = colid)
+    #------------------------------------
+    spacers[3].grid(row = 2, column = 7)
 
-# Now we need to know how many weapons we have
-length_a = len(character.weapon_inv) # should work fine, even with the tupples
+    # ROW 3
+    spacers[4].grid(row = 3, column = 0)
+    #-----------------------------------
+    for n in range(6):
+        colid = n + 1 # Column ID
+        modlabels[n][1].grid(row = 3, column = colid)
+    #-----------------------------------
+    spacers[5].grid(row = 3, column = 7)
 
-# Row More
-add_row = 5 #This is a counter for the armor class row
+    # ROW 4
 
-for n in range(length_a):
-    active_ros = n + 5
-    wea_list[n][1].grid(row = active_ros, column = 0, columnspan = 3)
-    add_row = active_ros + 1
-    
-# ROW add_row ----------
-ar_title.grid(row = add_row, column = 0, columnspan= 3, pady = 15)
+    spacers[6].grid(row = 3, column = 0)
+    #-----------------------------------
+    imglabel_one.grid(row = 4, column = 1, columnspan = 6, pady = 10)
+    #-----------------------------------
+    spacers[7].grid(row = 3, column = 7)
 
-# ROW add_row + 1 -----
-current_row = add_row + 1
-ar_but_list[1].grid(row = current_row, column = 0, columnspan = 3)
+    #------------------------------------------------------------------------------
+    #### 2nd Frame
+    #-----------------------------------------------------------------------------
 
-# ROW add 1
-if has_shield:
+    # ROW 0
+    healthtitle.grid(row = 0, column = 0, columnspan = 3, pady = 15)
+
+    # ROW 1
+    # Our health information
+    for n in range(3):
+        xspace = 0; # ensure that the actual 2 numbers have the propper buffer
+        if n in [0,2]:
+            xspace = 5
+        healthlabels[n][1].grid(row = 1, column = n, padx = xspace, pady = 10)
+
+    # ROW 2
+    # place the health modification button
+    dambutton.grid(row = 2, column = 0)
+    temp_hp_button.grid(row = 2, column = 1)
+    heabutton.grid(row = 2, column = 2)
+
+    # ROW 3
+    # Place the temporary health values
+    tempvalue.grid(row = 3, column = 0, pady = 5)
+    templabel.grid(row = 3, column = 1, columnspan = 2, pady = 5)
+
+    # R0W 4
+    wea_title.grid(row = 4, column = 0, columnspan = 3, pady = 15)
+
+    # Now we need to know how many weapons we have
+    length_a = len(character.weapon_inv) # should work fine, even with the tupples
+
+    # Row More
+    add_row = 5 #This is a counter for the armor class row
+
+    for n in range(length_a):
+        active_ros = n + 5
+        wea_list[n][1].grid(row = active_ros, column = 0, columnspan = 3)
+        add_row = active_ros + 1
+        
+    # ROW add_row ----------
+    ar_title.grid(row = add_row, column = 0, columnspan= 3, pady = 15)
+
+    # ROW add_row + 1 -----
+    current_row = add_row + 1
+    ar_but_list[1].grid(row = current_row, column = 0, columnspan = 3)
+
+    # ROW add 1
+    if has_shield:
+        current_row += 1 # Update the current row
+        shield_check[1].grid(row = current_row, column = 0, columnspan = 3, pady = 5)
+
+    #ROW next
     current_row += 1 # Update the current row
-    shield_check[1].grid(row = current_row, column = 0, columnspan = 3, pady = 5)
+    #----------------------------------------------------------------------------
+    # we have to take some special time here to 
+    # ensure that the correct armor value is there
+    # as well as checking if we have a shield
+    #----------------------------------------------------------------------------
+    # We grab the StringVar from the armor button list 
+    # (it's the first value of the tupple)
+    armorval = tfs.armorlabel(we_and_ac, ar_but_list[0], shield_check[0])
+    armorval.grid(row = current_row, column = 1, padx = 5, pady = 5)
 
-#ROW next
-current_row += 1 # Update the current row
-#----------------------------------------------------------------------------
-# we have to take some special time here to 
-# ensure that the correct armor value is there
-# as well as checking if we have a shield
-#----------------------------------------------------------------------------
-# We grab the StringVar from the armor button list 
-# (it's the first value of the tupple)
-armorval = tfs.armorlabel(we_and_ac, ar_but_list[0], shield_check[0])
-armorval.grid(row = current_row, column = 1, padx = 5, pady = 5)
+    #------------------------------------------------------------------------------
+    #### 3rd Frame
+    #------------------------------------------------------------------------------
 
-#------------------------------------------------------------------------------
-#### 3rd Frame
-#------------------------------------------------------------------------------
+    sk_title.grid(row = 0, column = 0, columnspan=2, padx = 15, pady = 15)
 
-sk_title.grid(row = 0, column = 0, columnspan=2, padx = 15, pady = 15)
+    length_b = len(sd.skill_list) // 2 # The total number of skills in 5e is 18
+    # so this number should be 9
 
-length_b = len(sd.skill_list) // 2 # The total number of skills in 5e is 18
-# so this number should be 9
+    for n in range(length_b):
+        act_row = n + 1 # the one is for the title.
+        sk_a = n*2 # stands for skill A
+        sk_b = (n*2) + 1 # stands for skill B
+        sk_but_list[sk_a][1].grid(row = act_row, column = 0, padx = 0)
+        sk_but_list[sk_b][1].grid(row = act_row, column = 1, padx = 0)
+        
+    # update act_row
+    act_row = act_row + 1
+    # place conditions label
+    con_title.grid(row = act_row, column = 0, columnspan = 2, padx = 20, pady = 5)
 
-for n in range(length_b):
-    act_row = n + 1 # the one is for the title.
-    sk_a = n*2 # stands for skill A
-    sk_b = (n*2) + 1 # stands for skill B
-    sk_but_list[sk_a][1].grid(row = act_row, column = 0, padx = 0)
-    sk_but_list[sk_b][1].grid(row = act_row, column = 1, padx = 0)
-    
-# update act_row
-act_row = act_row + 1
-# place conditions label
-con_title.grid(row = act_row, column = 0, columnspan = 2, padx = 20, pady = 5)
+    # place the buttons
+    act_row = act_row + 1 # update act_row
+    con_but[0].grid(row = act_row, column = 0, pady = 5)
+    con_but[1].grid(row = act_row, column = 1, pady = 5)
 
-# place the buttons
-act_row = act_row + 1 # update act_row
-con_but[0].grid(row = act_row, column = 0, pady = 5)
-con_but[1].grid(row = act_row, column = 1, pady = 5)
+    # and Place our conditions frame
+    act_row = act_row + 1 # update act_row
+    con_array.grid(row = act_row, column = 0, columnspan = 2, padx = 20, pady = 5)
 
-# and Place our conditions frame
-act_row = act_row + 1 # update act_row
-con_array.grid(row = act_row, column = 0, columnspan = 2, padx = 20, pady = 5)
+    act_row += 1 # update act_row
+    eq_but.grid(row=act_row, column = 0, columnspan=2, padx = 20, pady = 5)
 
-act_row = act_row + 1 # update act_row
-exit_but.grid(row = act_row, column = 0, columnspan = 2, padx = 20, pady = 5)
+    act_row = act_row + 1 # update act_row
+    exit_but.grid(row = act_row, column = 0, columnspan = 2, padx = 20, pady = 5)
+
+    return window, _update_ui
+
 #%% And start up our window
+if __name__ == "__main__":
+    main_win, update_ui= create_main_window()
 
-window.mainloop()
+    # Start the observer in a background thread
+    observer = start_observer(update_ui)
+    observer_thread = threading.Thread(target=observer.join, daemon=True)
+    observer_thread.start()
+
+
+    main_win.mainloop()
+    # Cleanup observer when the Tkinter window closes
+    observer.stop()
+    observer.join()
 if character is not None:
     print(f"The current health is {character.cur_hp}")
 else:
