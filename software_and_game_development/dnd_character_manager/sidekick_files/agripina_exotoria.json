@@ -1,0 +1,13 @@
+{
+    "name": "Agripina Exotoria",
+    "image": "agripina_exotoria.png",
+    "db": "databases/agripina_exotoria_database.db",
+    "color": "#0051BA",
+    "conditions": [],
+    "lang": [
+        "common",
+        "elvish"
+    ],
+    "exhaustion": 0,
+    "pb": 2
+}

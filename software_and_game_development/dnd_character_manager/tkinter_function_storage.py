@@ -36,6 +36,31 @@ LAB_OPTIONS_ONE = {
                 "relief" : tk.SOLID}
 
 
+#### FRAME GENERATING FUNCTIONS
+def padded_frame(root, pad: int, column_number: int, color: str):
+    """
+    A function to produce a padded frame (the outer columns, which are meant to be empty, have a fixed
+    width).
+    Parameters:
+        root: The root window or master frame instance.
+        pat (int): The amount of padding we want in pixels
+        column_number (int):  The number of filled columns we expect the frame to have.
+        color (str): The color of the frame expressed as a string.
+    Raises:
+        TypeError: Argument other than an integer or string entered.
+    Returns:
+        output (tk.Frame): A Frame object output.
+    """
+    if not (isinstance(column_number, int) and isinstance(color, str)): # ensure correct input
+        raise TypeError("Argument must be an correct.")
+    
+    output = tk.Frame(root, bg = color, pady = 10)
+    out_col = column_number + 1
+    for num in [0, out_col]: # iterate over the array.
+        output.columnconfigure(num, minsize=pad)
+    return output
+
+
 # Function 1
 def atribute_click(button_input, num_input):
     at_mod = (num_input - 10) // 2

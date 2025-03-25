@@ -565,24 +565,15 @@ class Weapon(Equipment):
             
         return long_range
     
-    def attack_roll(self, is_range: bool, hands_free: int) -> tuple:
+    def attack_roll(self, is_range: bool, hands_free: int) -> Tuple[int, bool, bool]:
         """
-        A fuction to simulate the attack roll 
-        using the global rolltwenty function.
-
-        Parameters
-        ----------
-        is_range : bool
-            Is the attack a ranged attack or not.
-        hands_free : int
-            how many free hands does the character have?
-
-        Returns
-        -------
-        result : tuple
-            The raw result of the attack roll with no modifier, alongside
-            whether versatility or finesse is being used.
-
+        A fuction to simulate the attack roll using the global rolltwenty function.
+        Parameters:
+            is_range (bool): Is the attack a ranged attack or not.
+            hands_free (int): How many free hands does the character have?
+        Returns:
+            result (Tuple[int, bool, bool]): The raw result of the attack roll with no modifier, 
+                folloed by first if versatility is being used, and then finesse.
         """
         # Define our advantage_num
         result = None
@@ -667,7 +658,7 @@ class Weapon(Equipment):
         
         return result
     
-    def damage_roll(self, mod_in: int, finnese: bool, versatile: bool, critical: bool):
+    def damage_roll(self, mod_in: int, using_versatility: bool, critical: bool):
         """
         A function to simulate the damage in an weapon attack roll.
 
@@ -675,9 +666,7 @@ class Weapon(Equipment):
         ----------
         mod_in: int
             the modifier that we wish to apply to the damage bool.
-        finnese: bool
-            Are we attacking with finnese?
-        versitile : bool
+        using_versatility : bool
             Are we attacking with versatility?
         critical : bool
             Was the attack a critical hit?
@@ -689,7 +678,7 @@ class Weapon(Equipment):
 
         """
         #### MAY NEED TO CHANGE THIS LATER
-        die_type = self.damage_die
+        die_type = self.damage_die_versatile if using_versatility else self.damage_die
         attack_dice = self.damage_amount
 
         # make sure to check for criticality
@@ -767,18 +756,11 @@ class Weapon(Equipment):
         """
         The attack function itself, which controls the usages of the
         other functions.
-
-
-        Parameters
-        ----------
-        shield : bool
-            A bool that describes whether we are using a shield so a two handed
-            weapon can't be used.
-
-        Returns
-        -------
-        None.
-
+        Parameters:
+            free_hands (int): How many hands free does the character have?
+            prof_in (int): The character's proficiency bonus.
+            str_score (int): The character's strength score.
+            dex_score (int, optional): The character's dexterity score. The default is 10.
         """
         # Define our damage and roll variables
         damage = 0 # define damage as zero to start, we can change this
@@ -855,7 +837,7 @@ class Weapon(Equipment):
             # and enter our damage data
             using_fin = roll[2]
             using_ver = roll[1]
-            damage = self.damage_roll(mod, using_fin, using_ver, crit)
+            damage = self.damage_roll(mod, using_ver, crit)
 
         yes_but = tk.Button(hit_pop, 
                             text = "Yes", 
