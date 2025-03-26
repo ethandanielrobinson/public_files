@@ -1,0 +1,45 @@
+#BEAMS
+
+# Summary
+RunNumber	Temperature 	a       	β       	α       	λ       	Reduced χ² 	
+25529   	1.940(0.007)K	0.25000 	0.09132 	1.09236 	30.84887	6.5652     	
+25548   	6.993(0.011)K	0.25000 	0.20852 	1.09236 	19.79927	24.7570    	
+25538   	19.420(0.003)K	0.25000 	0.55937 	1.09236 	0.31427 	3.1555     	
+
+# Fit Parameters
+
+# 	Name    Value     Uncertainty Lower   Upper   
+
+D:/Research/MuSR data/CoTa2O6_FC_LF=4000K/DAT files/CoTa2O6_FC_LF=4000K_T=2K.dat
+# Specific parameters for run 25529 (CoTa2O6 FC LF=4000G T=2K)
+
+	a       0.25000   0.51711     0.00000 0.25000 
+	β       0.09132   0.14169     0.00000 inf     
+	α       1.09236   0.00000     -inf    inf     
+	λ       30.84887  677.80716   0.00000 inf     
+
+	Reduced χ²        6.5652  
+
+D:/Research/MuSR data/CoTa2O6_FC_LF=4000K/DAT files/CoTa2O6_FC_LF=4000K_T=7K.dat
+# Specific parameters for run 25548 (CoTa2O6 FC LF=4000G T=7K)
+
+	a       0.25000   0.35789     0.00000 0.25000 
+	β       0.20852   0.18039     0.00000 inf     
+	α       1.09236   0.00000     -inf    inf     
+	λ       19.79927  125.85831   0.00000 inf     
+
+	Reduced χ²        24.7570 
+
+D:/Research/MuSR data/CoTa2O6_FC_LF=4000K/DAT files/CoTa2O6_FC_LF=4000K_T=19K.dat
+# Specific parameters for run 25538 (CoTa2O6 FC LF=4000G T=19.420(0.003)K)
+
+	a       0.25000   0.00551     0.00000 0.25000 
+	β       0.55937   0.02474     0.00000 inf     
+	α       1.09236   0.00000     -inf    inf     
+	λ       0.31427   0.01304     0.00000 inf     
+
+	Reduced χ²        3.1555  
+
+# Fitting equation
+
+	# A(t) = a*exp(-(λ*t)^β)

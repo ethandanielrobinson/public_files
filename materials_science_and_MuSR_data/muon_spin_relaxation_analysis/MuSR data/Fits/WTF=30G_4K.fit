@@ -1,0 +1,22 @@
+#BEAMS
+
+# Summary
+RunNumber	Temperature 	d       	λ       	α       	Reduced χ² 	
+25500   	3.945(0.013)K	0.03564 	4.45919 	1.09236 	1.0244     	
+
+# Fit Parameters
+
+# 	Name    Value     Uncertainty Lower   Upper   
+
+D:/Research/MuSR data/CoTa2O6_WTF-30G/DAT/CoTa2O6_WTF=30G_T=4K.dat
+# Specific parameters for run 25500 (CoTa2O6 wTF=30G T=4K)
+
+	d       0.03564   0.00463     0.00000 inf     
+	λ       4.45919   0.75733     0.00000 inf     
+	α       1.09236   0.00000     -inf    inf     
+
+	Reduced χ²        1.0244  
+
+# Fitting equation
+
+	# A(t) = d*exp(-λ*t)

@@ -1,0 +1,96 @@
+#BEAMS
+
+# Summary
+RunNumber	Temperature 	Φ       	β       	ν       	α       	a       	d       	λ       	Reduced χ² 	
+25469   	1.947(0.012)K	4.79101 	15.44924	0.00071 	1.09236 	0.07494 	0.00901 	0.26071 	1.3115     	
+25500   	3.945(0.013)K	70.93303	15.41482	0.09060 	1.09236 	0.24999 	0.00918 	1.11822 	0.8820     	
+25478   	7.321(0.014)K	90.73279	0.00000 	0.00027 	1.09236 	0.16601 	0.20808 	11.68877	1.2223     	
+25501   	9.041(0.010)K	36.91819	3.18339 	-0.40293	1.09236 	0.13313 	0.25000 	18.12492	0.6524     	
+25502   	10.969(0.009)K	-10.77470	0.68336 	0.43318 	1.09236 	0.06080 	0.16299 	3.85463 	1.1090     	
+25503   	13.073(0.009)K	7.49853 	0.55882 	-0.41707	1.09236 	0.11074 	0.11233 	3.26587 	1.5830     	
+
+# Fit Parameters
+
+# 	Name    Value     Uncertainty Lower   Upper   
+
+D:/Research/MuSR data/CoTa2O6_WTF-30G/DAT/CoTa2O6_WTF=30G_T=2K.dat
+# Specific parameters for run 25469 (CoTa2O6 2K wTF=30G)
+
+	Φ       4.79101   26722010.98993-inf    inf     
+	β       15.44924  2283.40491  0.00000 inf     
+	ν       0.00071   4874.63267  -inf    inf     
+	α       1.09236   0.00000     -inf    inf     
+	a       0.07494   2929.53899  0.00000 0.25000 
+	d       0.00901   0.00178     0.00000 0.25000 
+	λ       0.26071   0.10903     -inf    inf     
+
+	Reduced χ²        1.3115  
+
+D:/Research/MuSR data/CoTa2O6_WTF-30G/DAT/CoTa2O6_WTF=30G_T=4K.dat
+# Specific parameters for run 25500 (CoTa2O6 wTF=30G T=4K)
+
+	Φ       70.93303  843975.81587-inf    inf     
+	β       15.41482  5100.43446  0.00000 inf     
+	ν       0.09060   3981.49930  -inf    inf     
+	α       1.09236   0.00000     -inf    inf     
+	a       0.24999   10671.31243 0.00000 0.25000 
+	d       0.00918   0.01025     0.00000 0.25000 
+	λ       1.11822   0.94433     -inf    inf     
+
+	Reduced χ²        0.8820  
+
+D:/Research/MuSR data/CoTa2O6_WTF-30G/DAT/CoTa2O6_WTF=30G_T=7K.dat
+# Specific parameters for run 25478 (CoTa2O6 wTF=30 T=7.321(0.014)K)
+
+	Φ       90.73279  267214.57462-inf    inf     
+	β       0.00000   11.89344    0.00000 inf     
+	ν       0.00027   99.19500    -inf    inf     
+	α       1.09236   0.00000     -inf    inf     
+	a       0.16601   60533.84255 0.00000 0.25000 
+	d       0.20808   0.02930     0.00000 0.25000 
+	λ       11.68877  1.68764     0.00000 inf     
+
+	Reduced χ²        1.2223  
+
+D:/Research/MuSR data/CoTa2O6_WTF-30G/DAT/CoTa2O6_WTF=30G_T=9K.dat
+# Specific parameters for run 25501 (CoTa2O6 wTF=30G T=9K)
+
+	Φ       36.91819  82.09035    -inf    inf     
+	β       3.18339   0.68582     0.00000 inf     
+	ν       -0.40293  0.27450     -inf    inf     
+	α       1.09236   0.00000     -inf    inf     
+	a       0.13313   0.04419     0.00000 0.25000 
+	d       0.25000   0.46616     0.00000 0.25000 
+	λ       18.12492  36.70761    0.00000 inf     
+
+	Reduced χ²        0.6524  
+
+D:/Research/MuSR data/CoTa2O6_WTF-30G/DAT/CoTa2O6_WTF=30G_T=11K.dat
+# Specific parameters for run 25502 (CoTa2O6 wTF=30G T=11K)
+
+	Φ       -10.77470 10.44556    -inf    inf     
+	β       0.68336   0.09027     0.00000 inf     
+	ν       0.43318   0.01759     -inf    inf     
+	α       1.09236   0.00000     -inf    inf     
+	a       0.06080   0.00689     0.00000 0.25000 
+	d       0.16299   0.01039     0.00000 0.25000 
+	λ       3.85463   0.49419     0.00000 inf     
+
+	Reduced χ²        1.1090  
+
+D:/Research/MuSR data/CoTa2O6_WTF-30G/DAT/CoTa2O6_WTF=30G_T=13K.dat
+# Specific parameters for run 25503 (CoTa2O6 wTF=30G T=13K)
+
+	Φ       7.49853   5.55721     -inf    inf     
+	β       0.55882   0.04080     0.00000 inf     
+	ν       -0.41707  0.00867     -inf    inf     
+	α       1.09236   0.00000     -inf    inf     
+	a       0.11074   0.00633     0.00000 0.25000 
+	d       0.11233   0.01105     0.00000 0.25000 
+	λ       3.26587   0.57931     0.00000 inf     
+
+	Reduced χ²        1.5830  
+
+# Fitting equation
+
+	# A(t) = a*cos(2*π*ν*t + π*Φ/180)*exp(-β*t)+d*exp(-λ*t)
