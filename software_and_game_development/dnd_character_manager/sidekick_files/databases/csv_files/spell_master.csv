@@ -1,0 +1,50 @@
+id,nm,scl,lvl,c_t,rng,dur,desc,v_c,s_c,m_c,m_c_d,m_c_c,req_c,rit,spcl,atk
+1,mage hand,conjuration,0,6,30,60,"A spectral, floating hand appears at a point you choose within range. The hand 
+lasts for the duration or until you dismiss it as an action. The hand vanishes 
+if it is ever more than 30 feet away from you or if you cast this spell again.
+You can use your action to control the hand. You can use the hand to 
+manipulate an object, open an unlocked door or container, stow or retrieve an 
+item from an open container, or pour the contents out of a vial. You can move 
+the hand up to 30 feet each time you use it.
+The hand can't attack, activate magic items, or carry more than 10 pounds.",1,1,0,,,0,0,0,0
+2,prestidigitation,transmutation,0,6,10,3600,"This spell is a minor magical trick that novice spellcasters use for practice. 
+You create one of the following magical effects within range:
+
+-You create an instantaneous, harmless sensory effect, such as a shower of 
+ sparks, a puff of wind, faint musical notes, or an odd odor.
+-You instantaneously light or snuff out a candle, a torch, or a small 
+ campfire.
+-You instantaneously clean or soil an object no larger than 1 cubic foot.
+-You chill, warm, or flavor up to 1 cubic foot of nonliving material for 1 
+ hour.
+-You make a color, a small mark, or a symbol appear on an object or a surface 
+ for 1 hour.
+-You create a nonmagical trinket or an illusory image that can fit in your hand 
+ and that lasts until the end of your next turn.
+
+If you cast this spell multiple times, you can have up to three of its 
+non-instantaneous effects active at a time, and you can dismiss such an 
+effect as an action.",1,1,0,,,0,0,0,0
+3,ray of frost,evocation,0,6,60,0,"A frigid beam of blue-white light streaks toward a creature within range. Make 
+a ranged spell attack against the target. On a hit, it takes 1d8 cold damage, 
+and its speed is reduced by 10 feet until the start of your next turn.
+The spell's damage increases by 1d8 when you reach 5th level (2d8), 11th level 
+(3d8), and 17th level (4d8).",1,1,0,,,0,0,1,1
+4,burning hands,evocation,1,6,0,0,"As you hold your hands with thumbs touching and fingers spread, a thin sheet 
+of flames shoots forth from your outstretched fingertips. Each creature in a 
+15-foot cone must make a Dexterity saving throw. A creature takes 3d6 fire 
+damage on a failed save, or half as much damage on a successful one.
+The fire ignites any flammable objects in the area that aren't being worn or 
+carried.
+At Higher Levels. When you cast this spell using a spell slot of 2nd level or 
+higher, the damage increases by 1d6 for each slot level above 1st.",1,1,0,,,0,0,0,1
+5,magic missle,evocation,1,6,120,0,"You create three glowing darts of magical force. Each dart hits a creature of 
+your choice that you can see within range. A dart deals 1d4 + 1 force damage 
+to its target. The darts all strike simultaneously, and you can direct them to 
+hit one creature or several.
+At Higher Levels. When you cast this spell using a spell slot of 2nd level or 
+higher, the spell creates one more dart for each slot level above 1st.",1,1,0,,,0,0,0,1
+6,mage armor,abjuration,1,6,5,28800,"You touch a willing creature who isn't wearing armor, and a protective magical 
+force surrounds it until the spell ends. The target's base AC becomes 13 + its 
+Dexterity modifier. The spell ends if the target dons armor or if you dismiss 
+the spell as an action.",1,1,1,a piece of cured leather,,0,0,1,0

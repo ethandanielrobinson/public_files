@@ -7,7 +7,8 @@ from tkinter import ttk
 import time
 import numpy as np
 import os
-from typing import List, Tuple
+from typing import List, Tuple, Dict
+import math
 
 # Make sure we are in the files directory
 # script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -39,6 +40,11 @@ LABEL_OP_NOR = {
 LABEL_OP_RED = { 
                 "font": ("Times New Roman", 10),
                 "fg": "#FF0000"}
+
+
+#=========================================================================
+# define a dict to help manage ability scores
+ABILITY_DICT = {1: "STR", 2: "DEX", 3: "CON", 4: "INT", 5: "WIS", 6: "CHA"}
 #=========================================================================
 def xnor(in_a = None, in_b = None)->bool:
     """
@@ -52,6 +58,29 @@ def xnor(in_a = None, in_b = None)->bool:
     out_a = True if in_a else False # check if we have a input
     out_b = True if in_b else False # check if we have b input
     return True if out_a == out_b else False # only return True if out_a and out_b are the same
+
+def list_xnor(in_list: list):
+    """
+    A function that checks a list of inputs and returns true if they are all true or all false,
+    but returns false if some are true and some are false.
+    Parameters:
+        in_list (list): A list of variables, can be of mixed type
+    Returns:
+        OUT (bool): Is the list all of one type?
+    """
+    # we define a count for each true element in the list.  If the count equals the length of the list 
+    # (meaning everything in the list is true) or 0 (meaning everything in the list is false), we return
+    # True. If it is not one of those two numbers, we return False.
+    count = 0
+    # we check each element in the list
+    for elem in in_list:
+        if elem:
+            count += 1
+    if (count == len(in_list) or count == 0):
+        return True
+    else:
+        return False
+
 def remove_last_word(text: str):
     """
     A simple function to remove the last word in a string
@@ -72,6 +101,29 @@ def remove_last_word(text: str):
         words.pop()
         return " ".join(words)
     return "" # Return empty string if the input string is empty or contains only spaces
+
+def format_spell_text(in_str: str) -> str:
+    """
+    A function to format the raw text we get from the database into a more readable format.
+    Parameters:
+        in_str (str): The raw text that we want to format.
+    Raises:
+        TypeError: Argument other than string entered.
+    Returns:
+        out_str (str): The formatted string.
+    """
+    # check our input
+    if not isinstance(in_str, str):
+        raise TypeError("Argument other than string entered.")
+    
+    # Remove any line breaks that were added for database ease of maitanince
+    temp_str = in_str.replace('\n', '').replace('\r', '')
+
+    # format our input string, using the dollar sign for a line break
+    # (since fantasy and sci-fi worlds generaly don't use USD).
+    out_str = temp_str.replace("$", "\n")
+
+    return out_str
 
 def choose_char(vars: list):
     """
@@ -180,7 +232,7 @@ def error_box(error_string: str):
     error_lab.pack(padx = 5, pady = 5)
     
     # plus an exit button
-    error_but = tk.Button(er_win, text = "Exit", command = er_win.destroy)
+    error_but = tk.Button(er_win, text = "Exit", command = er_win.destroy, width = 6, **BUTTON_OPTIONS_RED)
     error_but.pack(padx = 5, pady = 5)
     
     er_win.grab_set()  # Makes popup modal (forces user to interact with it first)
@@ -511,6 +563,14 @@ class Weapon(Equipment):
         return None
     
     def ask_range(self):
+        """
+        A function to ask the user for the target's range
+        Raises:
+            ValueError: Input must be an integer.
+        Returns:
+            long_range (bool): Is the target at long range or not. None means the 
+                target is out of range.
+        """
         # initialize our variables.  ran is the target's range
         ran = None 
         
@@ -556,11 +616,14 @@ class Weapon(Equipment):
         ranpop.grab_set()  # Makes popup modal (forces user to interact with it first)
         ranpop.wait_window()  # Pauses execution until popup is closed
         
-        if ran < self.normal_range:
+        # target is at normal range --------------------------------------------------
+        if ran <= self.normal_range: 
             long_range = False
-        elif self.normal_range <= ran < self.max_range:
+        # target is at long range ----------------------------------------------------
+        elif self.normal_range < ran <= self.max_range: 
             long_range = True
-        else:
+        # target is out of range -----------------------------------------------------
+        else: 
             long_range = None
             
         return long_range
@@ -749,8 +812,7 @@ class Weapon(Equipment):
         thrpop.grab_set()  # Makes popup modal (forces user to interact with it first)
         thrpop.wait_window()  # Pauses execution until popup is closed
         
-        return out_bool
-    
+        return out_bool  
     
     def attack(self, free_hands: int, prof_in: int, str_score: int, dex_score:int = 10):
         """
@@ -1434,10 +1496,950 @@ class Condition:
         self.description = description
 
 ##########################################################################################
+#### SPELL CLASSES #######################################################################
+##########################################################################################
+class Spell:
+    def __init__(self, in_id: int, name: str, school: str, level: int, cast_time: int,
+                 range: int, duration: int, description: str, v_comp: bool = False, 
+                 s_comp: bool = False, m_comp: bool = False, m_comp_desc: str = None, 
+                 m_comp_cost: float = None, req_concentration: bool = False, 
+                 is_ritual: bool = False):
+        """
+        A class to contain all the information needed to initialize a spell.
+        Parameters:
+            id (int): The id we want the spell to have in the spell_master table.
+            name (str): The name of the spell.
+            school (str): What school of magic is the spell in (necromancy, for example)
+            level (int): What level is the spell (0 is a cantrip)
+            cast_time (int): How long does it take to cast the spell, expressed in seconds.
+                Six seconds is one action.
+            range (int): What is the spell's range, in feet. 0 means the target is self.
+            duration (int): The duration of the spell, expressed in seconds.
+            description (str): The text description of the spell.
+            v_comp (bool, optional): Does the spell require verbal components? The default is
+                False.
+            s_comp (bool, optional): Does the spell require somatic components? The default is
+                False.
+            m_comp (bool, optional): Does the spell require material components? The default is
+                False.
+            m_comp_desc (str, optional): If the spell requires material compenents, what are they?
+                The default is None.
+            m_comp_cost (float, optional): If the spell requires material compoents, do they have
+                a specific cost in gold pieces? The default is None.
+            req_concentration (bool, optional): Does the spell require concentration? The default
+                is False.
+            is_ritual (bool, optional): Can the spell be cast as a ritual? The default is False.
+        Raises:
+            ValueError: When values without the proper depencencies are entered as arguments.
+        Returns:
+            OUT (Spell): An instance of the Spell class.
+        """
+        self.id = in_id # the spells id number for the database
+        self.name = name # the spell's name
+        self.school = school # the spell's school
+        self.level = level # the spell's level
+        self.cast_time = cast_time # the spell's cast time in seconds
+        self.range = range # the spell's range in feet.  0 means the target is self.
+        self.duration = duration # the spells duration in seconds
+        self.desc = format_spell_text(description) # The spell's text description, properly formated
+        # The following atributes are optional ---------------------------------------------
+        self.v_comp = v_comp # does the spell require verbal components
+        self.s_comp = s_comp # does the spell require somatic components
+        self.m_comp = m_comp # does the spell require material components
+        self.m_comp_desc = m_comp_desc # description of the material components?
+        # do the material components have a cost? We ensure this number is a float.
+        self.req_con = req_concentration # Does the spell require concentration?
+        self.m_comp_cost = float(m_comp_cost) if m_comp_cost is not None else None 
+        self.is_ritual = is_ritual # can the spell be cast as a ritual?
+        
+    def cast_base_spell(self) -> bool:
+        """
+        A function to cast a basic (non-attack, non-modifiying) spell.
+        Returns:
+            out_bool (bool): Whether the spell was cast.
+        """
+        out_bool = None # Define our out_bool to be None
+        def button_press(in_b: bool) -> None:
+            """
+            An internal function to determine what to do when the button is pressed.
+            Parameters:
+                in_b (bool): The bool we wanted to return.
+            """
+            nonlocal out_bool
+            out_bool = in_b # set our out_bool
+            pop.destroy() # close the window
+
+        # create a window to display information
+        pop = tk.Toplevel()
+        pop.title("Normal Spell Cast")
+
+        name_txt = f"{self.name} spell information:"
+        name_lab = tk.Label(pop, text=name_txt, font=("Times New Roman", 12, "bold"))
+        name_lab.grid(row = 0, column = 0, columnspan = 2, padx = 5, pady = 5)
+
+        # We create a label to display the spell information, wraplength is in pixels, not characters
+        spell_lab = tk.Label(pop, text = self.desc, wraplength=400, bd=5, relief=tk.RIDGE, 
+                             justify=tk.LEFT, **LABEL_OP_NOR, pady=2) # we want to pad the groove a bit
+        spell_lab.grid(row = 1, column = 0, columnspan = 2, padx = 5, pady = 5)
+
+        # And create buttons to ask for user input.
+        yes_but = tk.Button(pop, text="Cast Spell", command=lambda: button_press(True), width=10, **BUTTON_OPTIONS_BLUE)
+        no_but = tk.Button(pop, text="Exit", command=lambda: button_press(False), width=10, **BUTTON_OPTIONS_RED)
+        # And place them
+        yes_but.grid(row = 2, column = 0, pady = 5)
+        no_but.grid(row = 2, column = 1, pady = 5)
+
+        pop.grab_set()  # Makes popup modal (forces user to interact with it first)
+        pop.wait_window()  # Pauses execution until popup is closed
+
+        # and return the bool
+        return out_bool
+
+class Attack_Spell(Spell):
+    def __init__(self, in_id: int, name: str, school: str, level: int, cast_time: int,
+                 range: int, duration: int, description: str, v_comp: bool = False, 
+                 s_comp: bool = False, m_comp: bool = False, m_comp_desc: str = None, 
+                 m_comp_cost: float = None, req_concentration: bool = False, 
+                 is_ritual: bool = False, effect_shape: str = None, effect_length: int = None, 
+                 origin_self: bool = False, save_type: int = None, save_suc: float = None, 
+                 damage_die_amount: int = None, damage_die_type: int = None, damage_bonus: int = None, 
+                 damage_type: str = None):
+        """
+        A function to intialize an Attack_Spell object.
+        Parameters:
+            id (int): The id we want the spell to have in the spell_master table.
+            name (str): The name of the spell.
+            school (str): What school of magic is the spell in (necromancy, for example)
+            level (int): What level is the spell (0 is a cantrip)
+            cast_time (int): How long does it take to cast the spell, expressed in seconds.
+                Six seconds is one action.
+            range (int): What is the spell's range, in feet. 0 means the target is self.
+            duration (int): The duration of the spell, expressed in seconds.
+            description (str): The text description of the spell.
+            v_comp (bool, optional): Does the spell require verbal components? The default is
+                False.
+            s_comp (bool, optional): Does the spell require somatic components? The default is
+                False.
+            m_comp (bool, optional): Does the spell require material components? The default is
+                False.
+            m_comp_desc (str, optional): If the spell requires material compenents, what are they?
+                The default is None.
+            m_comp_cost (float, optional): If the spell requires material compoents, do they have
+                a specific cost in gold pieces? The default is None.
+            req_concentration (bool, optional): Does the spell require concentration? The default
+                is False.
+            is_ritual (bool, optional): Can the spell be cast as a ritual? The default is False.
+            effect_shape (str, optional): If the spell is an area attack, what shape of area does
+                it effect. The default is None, which means it isn't an area attack.
+            effect_length (int, optional): How long is the effect area, in feet? The default is
+                None.
+            origin_self (bool, optional): Is the area of effect's origin the player? The default is
+                False.
+            save_type (int, optional): Does the spell require the target to make a saving throw?
+                If it does, give the id of the attribute. 7 means the spell automaticaly hits, such
+                as a Magic Missle. The default is None, meaning no save required.
+            save_suc (float, optional): If the save is successful, what fraction of damage can the
+                target ignore. 1.0 means all damage. The default is None.
+            damage_die_amount (int, optional): The number of damage dice to roll in the base case.
+                The default is None.
+            damage_die_type (int, optional): The number of sides on the damage die, expressed in 1dn
+                notation. The default is None.
+            damage_bonus (int, optional): The bonus we add to the damage roll. The default is None.
+            damage_type (str, optional): The type of damage, expressed as a string. The default is
+                None.
+        Raises:
+            ValueError: When Arguments with incorrect dependecies are entered.
+        Returns:
+            OUT (Attack_Spell): The Attack_Spell instance.
+        """
+        # Call the parent constructor using super()
+        super().__init__(in_id, name, school, level, cast_time, range, duration, description,
+                         v_comp, s_comp, m_comp, m_comp_desc, m_comp_cost, req_concentration,
+                         is_ritual)
+        self.effect_shape = effect_shape # what is the effect shape
+        self.effect_length = effect_length # what is the effect length.
+        self.origin = origin_self # Is the origin of the spell the player.
+        self.save_type = save_type # What is the id of the save atribute? 7 means automatic hit.
+        self.save_suc = save_suc # What percentage of damage does the saving throw allow you to avoid?
+        self.damage_die_amount = damage_die_amount # amount of damage dice to roll
+        self.damage_die_type = damage_die_type # sides on the damage dice, in 1dn notation
+        self.damage_bonus = damage_bonus # Any bonus we add to the damage roll (say, for magic missle)
+        self.damage_type = damage_type # type of damage, say "bludgeoning"
+
+        # We need to define some dependencies
+        if not xnor(self.m_comp, self.m_comp_desc): # We need a description for material components
+            raise ValueError("All material components must have a description.")
+        if not (xnor(self.damage_die_type, self.damage_type)): # we need damage for an attack
+            raise ValueError("All attacks must have both a damage die and a damage type")
+        if self.save_type != 7 and not (xnor(self.save_type, self.save_suc)):
+            raise ValueError ("A defined save must have both a attribute and an effect.")
+        if not (xnor(self.effect_shape, self.effect_length)):
+            raise ValueError("A defined effect must have a size.")
+        if not(list_xnor([self.effect_length, self.effect_shape, self.origin])):
+            raise ValueError("A defined effect must have a size and origin.")
+    
+    def ask_range(self) -> bool:
+        """
+        A function to ask the user for a range input.
+        Raises:
+            ValueError: Input needs to be an integer.
+        Returns:
+            outbool (bool): Is the target in range or not.
+        """
+        # initialize our variables.  ran is the target's range
+        ran = None
+        outbool = False
+        
+        #create a window asking for the targets range
+        ranpop = tk.Toplevel()
+        ranpop.title("Range Window")
+        ranpop.geometry("300x200") # set the geometry to 300x200
+        
+        # We define what to do when the submit button is pressed
+        def submit():
+            try:
+                nonlocal ran
+                ran = int(ran_str.get())
+                ranpop.destroy()
+            except ValueError:
+                error_label.config(text="Please enter a valid integer", fg="red")
+        
+        # Range Label ---- Asks for user input
+        ran_lab_one = tk.Label(ranpop, text = "Enter distance to target in feet:")
+        ran_lab_one.pack(padx = 5, pady = 5)
+        
+        # Initialize Entry Stringvar
+        ran_str = tk.StringVar()
+        # defining a function for the submit button that will get
+        # what's in the entry box and print it to the correct string.
+        
+        # Now we create our entry box
+        # Range Entry
+        ran_entry = tk.Entry(ranpop, textvariable = ran_str, width = 10)
+        ran_button = tk.Button(ranpop, 
+                               text = "Submit", 
+                               command = submit,
+                               width = 8,
+                               **BUTTON_OPTIONS_BLUE)
+        # Create our error labe, even if its not visible
+        error_label = tk.Label(ranpop, text="", fg="red")
+        
+        # and place these objects into our window
+        ran_entry.pack(pady = 5)
+        ran_button.pack(pady = 5)
+        error_label.pack(pady = 5)
+        
+        ranpop.grab_set()  # Makes popup modal (forces user to interact with it first)
+        ranpop.wait_window()  # Pauses execution until popup is closed
+        
+        # If target is in range, set outbool to True.
+        if ran <= self.range:
+            outbool = True
+        # And return our outbool.
+        return outbool
+
+    def attack_roll(self) -> int:
+        """
+        A fuction to simulate a spell attack roll using the global rolltwenty function.
+        Returns:
+            result (int): The raw result of the attack roll with no modifier.
+        """
+        # Define our advantage_num
+        result = None
+        # Define a function on what to do on a button press
+        def button_press(int_in: int):
+            nonlocal result # bring in our non_local variables
+            # get the result
+            result = rolltwenty(int_in)
+            rollpop.destroy()
+            
+        # create a roll options screen
+        rollpop = tk.Toplevel()
+        rollpop.title("Spell Roll Options")
+
+        
+        # Create a label to ask the user for input
+        rol_lab = tk.Label (rollpop, text = "Are you attacking with Advantage or Disadvantage?")
+        rol_lab.pack(padx = 5, pady = 5) # place the label in rollpop
+        
+        # We create the three buttons using a for loop, and place them in a frame
+        but_frame = tk.Frame(rollpop)
+        # over a tupple, as seen bellow
+        for num, lab in [(0, "Normal"),(1, "Advantage"), (-1, "Disadvantage")]:
+            button = tk.Button(but_frame, text = lab, command = lambda n = num: button_press(n), 
+                               width = 12, **BUTTON_OPTIONS_BLUE)
+            button.pack() # and place the button in the frame
+        but_frame.pack(padx=5, pady=5) # and place the frame
+
+        # finaly we place the logo
+        image_file = os.path.join(CUR_DIR, "sidekick_files", "images", "illustrator_tokens", 
+                                  "32w", "blue_symbol_32_px.png")
+        img_a = tk.PhotoImage(file = image_file)
+        
+        # setting image with the help of label
+        imglabel = tk.Label(rollpop, 
+                            image = img_a,
+                            bd= 5,
+                            relief=tk.SOLID)
+        imglabel.pack(pady = 5)
+        
+        rollpop.grab_set()  # Makes popup modal (forces user to interact with it first)
+        rollpop.wait_window()  # Pauses execution until popup is closed
+        
+        return result
+
+    def attack_result_info(self, attack_result: int) -> bool:
+        """
+        A function to display the attack roll result and ask the user if it hit.
+        Parameters:
+            attack_result (int): The modified attack roll
+        Returns:
+            attack_successful (bool): is the attack successful or not?
+        """
+        # Define the attack results window
+        atkpop = tk.Toplevel()
+        atkpop.title("Spell Attack Results Window")
+
+        attack_successful: bool = False # initialize our successful attack as false
+
+        # Place the user input label
+        res_txt = f"You rolled a {attack_result} on your attack roll."
+        res_lab = tk.Label(atkpop, text=res_txt, **LABEL_OP_NOR)
+        res_lab.pack(padx=5, pady=5)
+
+        # Plus a label asking the user for input (a hit label)
+        hit_lab = tk.Label(atkpop, text = "Did the attack succeed?", **LABEL_OP_NOR)
+        hit_lab.pack(padx = 5, pady = 5)
+        
+        # Before we provide some buttons for them to answer
+        def on_yes_button_click():
+            nonlocal attack_successful
+            attack_successful = True
+            atkpop.destroy()
+
+        # define a frame for the buttons
+        butfram = tk.Frame(atkpop)
+        yes_but = tk.Button(butfram, 
+                            text = "Yes", 
+                            command = on_yes_button_click,
+                            width = 6,
+                            **BUTTON_OPTIONS_BLUE)
+        no_but = tk.Button(butfram,
+                           text = "No",
+                           command = atkpop.destroy,
+                           width = 6,
+                           **BUTTON_OPTIONS_RED)
+        yes_but.pack()
+        no_but.pack()
+        butfram.pack(padx=5, pady=5)
+        
+        atkpop.grab_set()  # Makes popup modal (forces user to interact with it first)
+        atkpop.wait_window()  # Pauses execution until popup is closed
+
+        return attack_successful # and return the attack successful bool
+
+    def damage_roll(self, is_c: bool, red: float) -> None:
+        """
+        A function to actualy roll the damage dice.
+        Parameters:
+            is_c (bool): Is the roll a critical one?
+            red (float): The amount we wish to reduce the damage by.
+        Returns:
+            dam (int): The damage dealt.
+        """
+        dice_amount = self.damage_die_amount
+
+        # make sure to check for criticality
+        dice_amount *= 2 if is_c else 1
+        
+        # The bonus damage is the damage bonus, if it exists. If it doesn't, we set to be zero.
+        bonus_dam = self.damage_bonus if self.damage_bonus is not None else 0
+
+        # generate the damage value based on the attack, the amount of dice to roll
+        # and any specified bonsus (like for magic missle)
+        raw_dam = rolldamage(bonus_dam, self.damage_die_type, dice_amount)
+        # We acount for the possibility of reduction
+        dam = int(math.floor(raw_dam * (1.0 - red)))
+        return dam
+
+    def damage_window(self, is_crit: bool, display_txt: str) -> None:
+        """
+        A Function to call for a damage roll on a spell attack
+        Parameters:
+            is_crit (bool): Did we roll a critical on the roll.
+            display_txt (str): Additional text about the target we wish to display.
+                None means no special text.
+        Returns:
+            out_dam (int): The spells damage.
+        """
+        # We don't need to worry about damage reduction here, so we set it to zero
+        # we then use the damage_roll function defined above.
+        dam_val = self.damage_roll(is_crit, 0.0)
+            
+        # And generate the damage window
+        dampop = tk.Toplevel()
+        dampop.title("Damage Window")
+
+        # if we rolled a critical, we notify the player
+        if is_crit:
+            crit_lab = tk.Label(dampop, text="CRITICAL!", **LABEL_OP_RED)
+            crit_lab.pack(padx = 5, pady = 5)
+        
+        # The user info label
+        dam_str = f"The damage rolled was {str(dam_val)} {self.damage_type} damage!"
+        dam_lab = tk.Label(dampop, text = dam_str, **LABEL_OP_NOR)
+        dam_lab.pack(padx = 5, pady = 5)
+
+        # Display target info, if nessicary
+        if display_txt:
+            disp_lab = tk.Label(dampop, text = display_txt, **LABEL_OP_RED)
+            disp_lab.pack(padx = 5, pady = 5)
+        
+        # And the exit button
+        exit_but = tk.Button(dampop, 
+                             text = "Exit",
+                             command = dampop.destroy,
+                             width = 6,
+                             **BUTTON_OPTIONS_RED)
+        exit_but.pack(padx=5, pady = 5)
+        
+        dampop.grab_set()  # Makes popup modal (forces user to interact with it first)
+        dampop.wait_window()  # Pauses execution until popup is closed
+        
+        return dam_val
+        
+    def get_targets(self) -> List[str]:
+        """
+        A function to get the user input for targets for an area-attack spell
+        Returns:
+            target_list (List[str]): The names of the targets as a list of strings.
+        """
+        target_list: List[str] = [] # initialise the target list.
+        list_raw: str = None # the display string
+        list_display = tk.StringVar() # define list dislpay as a StringVar
+        list_display.set("No current targets.") # and define the inital state
+
+        def reset_display(in_target: str):
+            """
+            A function to reset the dislpayed list of names
+            Parameters:
+                in_target (str): The name of the target we want to add to the display
+            """
+            nonlocal list_raw
+            nonlocal list_display
+            if list_raw == None:
+                list_raw = in_target # if the list_raw is empty, we just add the name
+            else:
+                list_raw = list_raw + ", " + in_target # we add to the string, using a comma
+            list_display.set(list_raw) # Update list_display
+
+        def button_press():
+            # Define our non-local variables
+            nonlocal target_list
+            nonlocal list_display
+            new_target = target.get()
+            if new_target not in target_list: # check if the name is already in the list
+                target_list.append(new_target) # add the target to the list
+                reset_display(new_target) # reset the display
+
+        tarpop = tk.Toplevel()
+        tarpop.title = "Attack Targeting Window"
+
+        # Label the current target, row 0
+        q_lab = tk.Label(tarpop, text="Current Targets:", **LABEL_OP_NOR)
+        q_lab.grid(row = 0, column = 0, columnspan=2)
+
+        # list the current targets, row 1
+        tarlab = tk.Label(tarpop, textvariable=list_display, bd = 5, relief=tk.RIDGE, **LABEL_OP_NOR)
+        tarlab.grid(row = 1, column = 0, columnspan=2)
+
+        #and ask the user for input, row 2
+        target = tk.StringVar()
+        a_lab = tk.Label(tarpop, text = "Target:", **LABEL_OP_NOR)
+        # And the user entry
+        a_entry = tk.Entry(tarpop, textvariable = target, width = 20)
+        a_lab.grid(row=2, column=0)
+        a_entry.grid(row=2, column=1)
+
+        # And the user control buttons, row 3
+        add_button = tk.Button(tarpop, text="Add To List", command=button_press, width = 15, **BUTTON_OPTIONS_BLUE)
+        com_button = tk.Button(tarpop, text="Confirm Targets", command=tarpop.destroy,
+                               width=15, **BUTTON_OPTIONS_BLUE)
+        add_button.grid(row=3, column=0)
+        com_button.grid(row=3, column=1)
+
+        tarpop.grab_set()  # Makes popup modal (forces user to interact with it first)
+        tarpop.wait_window()  # Pauses execution until popup is closed
+
+        return target_list # return the target list
+    
+    def get_targets_special(self) -> Dict[str, int]:
+        """
+        A special version of get_targets that allows the list to contain multiple instances of the
+        same target for independently targeted spells like Magic Missle.
+        Returns:
+            target_list (Dict[str, int]): The names and occurences of the targets stored as a dict, with the
+                names as the key.
+        """
+        target_list: Dict[str, int] = {} # initialise the target dict..
+        list_raw: str = None # the display string
+        list_display = tk.StringVar() # define list dislpay as a StringVar
+        list_display.set("No current targets.") # and define the inital state
+
+        def reset_display(in_target: str):
+            """
+            A function to reset the dislpayed list of names
+            Parameters:
+                in_target (str): The name of the target we want to add to the display
+            """
+            nonlocal list_raw
+            nonlocal list_display
+            if list_raw == None:
+                list_raw = in_target # if the list_raw is empty, we just add the name
+            else:
+                list_raw = list_raw + ", " + in_target # we add to the string, using a comma
+            list_display.set(list_raw) # Update list_display
+
+        def button_press():
+            # Define our non-local variables
+            nonlocal target_list
+            nonlocal list_display
+            new_target = target.get()
+            if new_target not in target_list.keys(): # check if the name is already in the list keys
+                target_list[new_target] = 1 # we define a new entry
+                reset_display(new_target) # reset the display
+            else: # if the target is in the list
+                target_list[new_target] += 1 # we itterate by one.
+                reset_display(new_target)
+
+        tarpop = tk.Toplevel()
+        tarpop.title = "Attack Targeting Window"
+
+        # We want an info label informing the user that the same target can be attacked multiple times
+        # for this type of spell.
+        info_txt = "As this spell is independently targteted, the same target can be entered multiple times."
+        info_lab = tk.Label(tarpop, text = info_txt, wraplength=250, **LABEL_OP_RED)
+        info_lab.grid(row=0, column=0, columnspan=2, padx = 5, pady = 5)
+
+        # Label the current target, row 1
+        q_lab = tk.Label(tarpop, text="Current Targets:", **LABEL_OP_NOR)
+        q_lab.grid(row = 1, column = 0, columnspan=2)
+
+        # list the current targets, row 2
+        tarlab = tk.Label(tarpop, textvariable=list_display, bd = 5, relief=tk.RIDGE, **LABEL_OP_NOR)
+        tarlab.grid(row = 2, column = 0, columnspan=2)
+
+        #and ask the user for input, row 3
+        target = tk.StringVar()
+        a_lab = tk.Label(tarpop, text = "Target:", **LABEL_OP_NOR)
+        # And the user entry
+        a_entry = tk.Entry(tarpop, textvariable = target, width = 20)
+        a_lab.grid(row=3, column=0)
+        a_entry.grid(row=3, column=1)
+
+        # And the user control buttons, row 4
+        add_button = tk.Button(tarpop, text="Add To List", command=button_press, width = 15, **BUTTON_OPTIONS_BLUE)
+        com_button = tk.Button(tarpop, text="Confirm Targets", command=tarpop.destroy,
+                               width=15, **BUTTON_OPTIONS_BLUE)
+        add_button.grid(row=4, column=0)
+        com_button.grid(row=4, column=1)
+
+        tarpop.grab_set()  # Makes popup modal (forces user to interact with it first)
+        tarpop.wait_window()  # Pauses execution until popup is closed
+
+        return target_list # return the target list
+
+    def force_saving_throw(self, dif: int, target_list: List[str]) -> Dict[str, bool]:
+        """
+        A function to manage our saving throws.
+        Parameters:
+            dif (int): The DC of the saving throw
+            target_list (List[str]): A list of all the creatures effected by the spell
+        Returns:
+            out_list (Dict[str, bool]): A list of all the creatures hit by the spell.
+        """
+        out_list = {n: False for n in target_list}
+        # 1) instantiate one IntVar per name, default 0 (failed)
+        var_dict = {n: tk.IntVar(value=0) for n in target_list}
+
+        def on_choice(in_name: str):
+            # read the IntVar and update out_list
+            out_list[in_name] = bool(var_dict[in_name].get())
+
+        respop = tk.Toplevel()
+        respop.title("Saving Throw Results")
+
+        tk.Label(
+            respop,
+            text=(
+                f"For each name below, select if they passed or failed the "
+                f"{ABILITY_DICT[self.save_type]} DC {dif} saving throw."
+            ),
+            **LABEL_OP_NOR
+        ).pack(padx=5, pady=5)
+
+        for name in target_list:
+            frm = tk.Frame(respop, bg="#DDDDDD")
+            tk.Label(frm, text=name, **LABEL_OP_NOR).grid(row=0, column=0)
+
+            # 2) give each button a value
+            yes = tk.Radiobutton(
+                frm,
+                text="passed",
+                variable=var_dict[name],
+                value=1,
+                command=lambda n=name: on_choice(n)
+            )
+            no = tk.Radiobutton(
+                frm,
+                text="failed",
+                variable=var_dict[name],
+                value=0,
+                command=lambda n=name: on_choice(n)
+            )
+
+            yes.grid(row=0, column=1)
+            no.grid(row=0, column=2)
+            frm.pack(padx=5, pady=3)
+
+        tk.Button(
+            respop,
+            text="Confirm",
+            pady=10,
+            command=respop.destroy,
+            **BUTTON_OPTIONS_BLUE
+        ).pack(padx=5, pady=5)
+
+        respop.grab_set()
+        respop.wait_window()
+
+        return out_list
+
+    def save_damage_roll(self, in_dict: Dict[str, bool]) -> None:
+        """
+        A function to roll damage dice for multiple targets.
+        Parameters:
+            in_dict (Dict[str, bool]): A dict object containing the relevant information.
+                The str is the target's name. The bool is whether the target was successful
+                in it's saving throw or not.
+        """
+        # We first create a window
+        dampop = tk.Toplevel()
+        dampop.title("Save Damage Result Window")
+
+        # And define what the user is seeing.
+        usr_txt = "The following targets were damaged as such"
+        usr_lab = tk.Label(dampop, text=usr_txt, **LABEL_OP_NOR)
+        usr_lab.pack(padx=5, pady=5)
+
+        # Before automaticaly generating a result label for each target.
+        for target_name, suc in in_dict.items():
+            # We define name_dam, using an if/else statement
+            name_dam = self.damage_roll(False, self.save_suc) if suc else self.damage_roll(False, 0.0)
+            # create a label to display this information
+            name_txt = f"Target {target_name} has recived {name_dam} {self.damage_type} damage."
+            name_lab = tk.Label(dampop, text=name_txt, bg="#DDDDDD", **LABEL_OP_NOR)
+            name_lab.pack(padx=5, pady=3) # place the label
+        
+        # and create a button to exit and place it using pack
+        exit_but = tk.Button(dampop, text = "EXIT", width=6, command=dampop.destroy, **BUTTON_OPTIONS_RED)
+        exit_but.pack(padx=5, pady=5)
+
+        dampop.grab_set()  # Makes popup modal (forces user to interact with it first)
+        dampop.wait_window()  # Pauses execution until popup is closed
+
+    def auto_damage_roll(self, in_dict: Dict[str, int]) -> None:
+        """
+        A function to automaticaly damage multiple targets for spells such as magic missle.
+        Parameters:
+            in_dict (Dict[str, int]): The dictionary containing the targeting information, in the 
+                form of name: attack amount.
+        """
+        dampop = tk.Toplevel()
+        dampop.title("Attack Damage Result Window")
+
+        # And define what the user is seeing.
+        usr_txt = "The following targets were damaged as such"
+        usr_lab = tk.Label(dampop, text=usr_txt, **LABEL_OP_NOR)
+        usr_lab.pack(padx=5, pady=5)
+
+        # Before automaticaly generating a result label for each target.
+        for target_name, amt in in_dict.items():
+            # We define name_dam, using the rolldamage master function
+            name_dam = 0 # We initialize roll damage
+            for n in range(amt): # we want to roll the correct number of times, but we need to start at zero
+                name_dam += self.damage_roll(False, 0.0)
+            # create a label to display this information
+            name_txt = f"Target {target_name} has recived {name_dam} {self.damage_type} damage."
+            name_lab = tk.Label(dampop, text=name_txt, bg="#DDDDDD", **LABEL_OP_NOR)
+            name_lab.pack(padx=5, pady=3) # place the label
+
+        # and create a button to exit and place it using pack
+        exit_but = tk.Button(dampop, text = "EXIT", width=6, command=dampop.destroy, **BUTTON_OPTIONS_RED)
+        exit_but.pack(padx=5, pady=5)
+
+        dampop.grab_set()  # Makes popup modal (forces user to interact with it first)
+        dampop.wait_window()  # Pauses execution until popup is closed
+
+    def singular_attack(self, cm: int):
+        """
+        A function to manage the function calls for a singular spell attack against a single target.
+        Parameters:
+            cm (int): The cast modifier for the spell
+        Returns:
+            OUT (Tuple[bool, int]): A tuple containing the criticality bool first and the modified roll second.
+        """
+        # Define our damage and roll variables
+        roll = self.attack_roll()
+        cr = True if roll == 20 else False # check for criticality
+        rm = roll + cm # calculate the modified roll
+        return cr, rm
+
+    def cast_spell_attack(self, prof_bonus: int, relavant_score: int, spcl_txt: str = None) -> bool:
+        """
+        A function to cast an attack spell.
+        Parameters:
+            prof_bonus (int): The character's proficiency bonus.
+            relevant_score (int): The relative atribute score, such as intelligence or charisma.
+            spcl_txt (str, optional): Any special instructions we wish to give the player. The
+                default is None. This option is generaly used for Special_Attack_Spells, but is
+                defined here for convenience.
+        Returns:
+            out_b (bool): Whether the spell is cast or not.
+        """
+        # We define the spell modifier
+        spell_mod = ((relavant_score - 10) // 2)
+        cast_mod = prof_bonus + spell_mod # Define our casting modifier
+        in_range = True # is the target in range, which we assume to be true
+
+        # first we need to ask the user if they wish to cast the spell
+        # Which does not require outside information.
+        out_b = self.cast_base_spell() # display the spell information.
+        if out_b:
+
+            damage = 0 # define damage as zero to start, we can change this
+
+            # We condsider three different scenarios
+            # 1) An attack roll (save_type is None)
+            if self.save_type == None:
+                            # if we are using a ranged spell, we need the target's range
+                # Anything over 5 feet is considered a ranged spell.
+                if self.range > 5:
+                    in_range = self.ask_range()
+
+                # if the target is in range, we can attack.
+                if in_range:
+                    # Get the details from my spell attack
+                    critical, roll_modified = self.singular_attack(cast_mod)
+                    # And display the attack window
+                    if critical:
+                        damage = self.damage_window(critical, spcl_txt) # pass the criticality bool to the damage roll function
+                    else:
+                        if self.attack_result_info(roll_modified):
+                            damage = self.damage_window(critical, spcl_txt) # pass the criticality bool to the damage roll function
+                        else:
+                            error_box("Failed to hit target!") # we failed to hit our target
+
+                #### TEST LINE
+                print(f"You rolled {roll_modified} and dealt {damage} {self.damage_type} damage.")
+            
+            # 2) Force a save roll (save_type is None)
+            elif self.save_type in {1,2,3,4,5,6}:
+                st_dificulty = 8 + cast_mod # set the dificulty of the saving throw.
+
+                # First we need to find out how many targets we are attacking using the targeting window.
+                targets = self.get_targets()
+                # We pass these targets into the Saving Roll Window
+                target_dict = self.force_saving_throw(st_dificulty, targets)
+                # And generate the damage window.
+                self.save_damage_roll(target_dict)
+                #### TEST LINE
+                print("Damage dealt to various targets.")
+            
+            # 3) An auto hitting spell, similar to magic missle.
+            elif self.save_type == 7:
+                # like before, we need to get targets
+                targets = self.get_targets_special()
+                # This time, we can place them direclty into the auto_damage_roll function
+                # since no saving throw is needed.
+                self.auto_damage_roll(targets)
+                #### TEST LINE
+                print("Successfuly cast Magic Missile")
+            else:
+                error_box("Target out of range!") # target is out of range.
+
+        else:
+            print(f"{self.name} not cast.")
+
+        return out_b
+
+class Special_Spell(Spell):
+    def __init__(self, in_id: int, name: str, school: str, level: int, cast_time: int,
+                 range: int, duration: int, description: str, v_comp: bool = False, 
+                 s_comp: bool = False, m_comp: bool = False, m_comp_desc: str = None, 
+                 m_comp_cost: float = None, req_concentration: bool = False, 
+                 is_ritual: bool = False, indicator: int = None, special_text: str = ""):
+        """
+        A child class to contain the specific information needed for special type spells (spells that
+        require special rules to function correclty, such as magic missle.)
+        Parameters:
+            id (int): The id we want the spell to have in the spell_master table.
+            name (str): The name of the spell.
+            school (str): What school of magic is the spell in (necromancy, for example)
+            level (int): What level is the spell (0 is a cantrip)
+            cast_time (int): How long does it take to cast the spell, expressed in seconds.
+                Six seconds is one action.
+            range (int): What is the spell's range, in feet. 0 means the target is self.
+            duration (int): The duration of the spell, expressed in seconds.
+            description (str): The text description of the spell.
+            v_comp (bool, optional): Does the spell require verbal components? The default is
+                False.
+            s_comp (bool, optional): Does the spell require somatic components? The default is
+                False.
+            m_comp (bool, optional): Does the spell require material components? The default is
+                False.
+            m_comp_desc (str, optional): If the spell requires material compenents, what are they?
+                The default is None.
+            m_comp_cost (float, optional): If the spell requires material compoents, do they have
+                a specific cost in gold pieces? The default is None.
+            req_concentration (bool, optional): Does the spell require concentration? The default
+                is False.
+            is_ritual (bool, optional): Can the spell be cast as a ritual? The default is False.
+            indicator (int, optional): The indicator of what type of special spell this is (such as unique 
+                effect or such). The default is None, meaning a unique spell. 0 means an spell that imparts
+                some effect to the target, such as "ray of frost."
+            special_text (str, optional): Any specific text we want the spell dialogue box to display.
+                The default is the empty string.
+        Returns:
+            OUT (Special_Spell): The Special_Spell instance.
+        """
+        # Call the parent constructor using super()
+        super().__init__(in_id, name, school, level, cast_time, range, duration, description,
+                         v_comp, s_comp, m_comp, m_comp_desc, m_comp_cost, req_concentration,
+                         is_ritual)
+        self.indicator = indicator # The indicator (special spell type)
+        self.special_text = special_text # and specific text we want to display.
+    
+    def cast_special_spell(self) -> None:
+        """
+        A funciton to cast a special type spell.
+        Returns:
+            out_b (bool): Whether the spell is cast or not.
+        """
+        # first, we cast the spell as usual.  The specific special atributes of the spell should
+        # be contained in the spell's text description.
+        out_b = self.cast_base_spell()
+        if out_b:
+            error_txt = "You have selecte a spell whose atributes are not built into they system yet!"
+            error_box(error_txt)
+
+        return out_b
+
+class Special_Attack_Spell(Attack_Spell):
+    def __init__(self, in_id: int, name: str, school: str, level: int, cast_time: int,
+                 range: int, duration: int, description: str, v_comp: bool = False,
+                 s_comp: bool = False, m_comp: bool = False, m_comp_desc: str = None, 
+                 m_comp_cost: float = None, req_concentration: bool = False, 
+                 is_ritual: bool = False, effect_shape: str = None, effect_length: int = None, 
+                 origin_self: bool = False, save_type: int = None, save_suc: float = None, 
+                 damage_die_amount: int = None, damage_die_type: int = None, damage_bonus: int = None, 
+                 damage_type: str = None, indicator: int = None, special_text: str = ""):
+        """
+        A function to intialize an Special_Attack_Spell object.
+        Parameters:
+            id (int): The id we want the spell to have in the spell_master table.
+            name (str): The name of the spell.
+            school (str): What school of magic is the spell in (necromancy, for example)
+            level (int): What level is the spell (0 is a cantrip)
+            cast_time (int): How long does it take to cast the spell, expressed in seconds.
+                Six seconds is one action.
+            range (int): What is the spell's range, in feet. 0 means the target is self.
+            duration (int): The duration of the spell, expressed in seconds.
+            description (str): The text description of the spell.
+            v_comp (bool, optional): Does the spell require verbal components? The default is
+                False.
+            s_comp (bool, optional): Does the spell require somatic components? The default is
+                False.
+            m_comp (bool, optional): Does the spell require material components? The default is
+                False.
+            m_comp_desc (str, optional): If the spell requires material compenents, what are they?
+                The default is None.
+            m_comp_cost (float, optional): If the spell requires material compoents, do they have
+                a specific cost in gold pieces? The default is None.
+            req_concentration (bool, optional): Does the spell require concentration? The default
+                is False.
+            is_ritual (bool, optional): Can the spell be cast as a ritual? The default is False.
+            effect_shape (str, optional): If the spell is an area attack, what shape of area does
+                it effect. The default is None, which means it isn't an area attack.
+            effect_length (int, optional): How long is the effect area, in feet? The default is
+                None.
+            origin_self (bool, optional): Is the area of effect's origin the player? The default is
+                False.
+            save_type (int, optional): Does the spell require the target to make a saving throw?
+                If it does, give the id of the attribute. 7 means the spell automaticaly hits, such
+                as a Magic Missle. The default is None, meaning no save required.
+            save_suc (float, optional): If the save is successful, what fraction of damage can the
+                target ignore. 1.0 means all damage. The default is None.
+            damage_die_amount (int, optional): The number of damage dice to roll in the base case.
+                The default is None.
+            damage_die_type (int, optional): The number of sides on the damage die, expressed in 1dn
+                notation. The default is None.
+            damage_bonus (int, optional): The bonus we add to the damage roll. The default is None.
+            damage_type (str, optional): The type of damage, expressed as a string. The default is
+                None.
+            indicator (int, optional): The indicator of what type of special spell this is (such as unique 
+                effect or such). The default is None, meaning a unique spell. 0 means an spell that imparts
+                some effect to the target, such as "ray of frost."
+            special_text (str, optional): Any specific text we want the spell dialogue box to display.
+                The default is the empty string.
+        Raises:
+            ValueError: When Arguments with incorrect dependecies are entered.
+        Returns:
+            OUT (Attack_Spell): The Attack_Spell instance.
+        """
+        # Call the parent constructor using super()
+        super().__init__(in_id, name, school, level, cast_time, range, duration, description,
+                         v_comp, s_comp, m_comp, m_comp_desc, m_comp_cost, req_concentration,
+                         is_ritual)
+        self.effect_shape = effect_shape # what is the effect shape
+        self.effect_length = effect_length # what is the effect length.
+        self.origin = origin_self # Is the origin of the spell the player.
+        self.save_type = save_type # What is the id of the save atribute? 7 means automatic hit.
+        self.save_suc = save_suc # What percentage of damage does the saving throw allow you to avoid?
+        self.damage_die_amount = damage_die_amount # amount of damage dice to roll
+        self.damage_die_type = damage_die_type # sides on the damage dice, in 1dn notation
+        self.damage_bonus = damage_bonus # Any bonus we add to the damage roll (say, for magic missle)
+        self.damage_type = damage_type # type of damage, say "bludgeoning"
+        self.indicator = indicator # The indicator (special spell type)
+        self.special_text = special_text # and specific text we want to display.
+
+    def cast_special_spell_attack(self, prof_bonus: int, relavant_score: int) -> bool:
+        """
+        A function to cast a special attack spell
+        Parameters:
+            prof_bonus (int): The character's proficiency bonus
+            relavant_score (int): The character's spellcasting ability score.
+        Returns:
+            out_b (bool): Whether the spell is cast or not.
+        """
+        # first, we cast the spell as usual.  The specific special atributes of the spell should
+        # be contained in the spell's text description.
+        out_b = False
+        if self.indicator == 0: # Spell forces a condition upon a target with a successful hit.
+            out_b = self.cast_spell_attack(prof_bonus, relavant_score, spcl_txt=self.special_text)
+        elif self.indicator == 1: # Spell creates multiple beams when leveled up
+            out_b = self.cast_spell_attack(prof_bonus, relavant_score)
+        else:
+            error_box("Spell id not recognized, Error cssa_1.")
+
+        return out_b
+
+
+##########################################################################################
 #### CHARACTER CLASSES ###################################################################
 ##########################################################################################
 class Character:
-    def __init__(self, name:str, image:str, db: str, color: str, conditions: List[Tuple[int, str]], lang: list[str],
+    def __init__(self, name:str, image:str, db: str, color: str, lang: list[str],
                   exhaustion: int, pb: int = 0):
         """
         Initialialzes the character class, which stores the information neccisary to create
@@ -1457,7 +2459,6 @@ class Character:
         self.image = image # The image location
         self.db = db # the database location
         self.color = color # the character's color code.
-        self.conditions = conditions # The character's conditions list, takes tuples
         self.lang = lang
         self.exhaustion = exhaustion # The characer's exaustion level.
         self.pb = pb # the proficiency bonus
@@ -1475,6 +2476,8 @@ class Character:
         self.max_hd: int = None # the character's max hit dice, defined later
         self.cur_hd: int = None # the character's current hit dice, defined later
         self.hd_type: int = None # the number of sides on the character's hit dice, defined later
+        # CONDITION DATA
+        self.conditions : Dict[int, Condition] = {} # An inventory dict for the conditions.
         # INVENTORY DATA
         self.main_inv: List[Tuple[Equipment, int]] = [] # initialize the main inventory
         self.weapon_inv: List[Tuple[Weapon, int]] = [] # initialize the weapon inventory
@@ -1484,6 +2487,13 @@ class Character:
         # SKILL DATA
         self.skills_prof: list[int] = [] # defined in the skills functions
         self.skills_exp : list[int] = [] # the expertise list (for characters that have that)
+        # SPELL DATA
+        self.spell_list: Dict[int, Spell] = {} # the spells the character has prepared, stored in a dict
+        self.atk_spell_list: List[int] = []
+        # The character's available spell slots. The first number is availble slots, the second number is total slots.
+        # The keys are the corresponding spell level.
+        self.spell_slots: Dict[int, List[int]] = {1: [0,0], 2: [0,0], 3: [0,0], 4: [0,0], 5: [0,0], 
+                                            6: [0,0], 7: [0,0], 8: [0,0], 9: [0,0]}
 
     def set_atributes(self, in_list: list):
         """
@@ -1533,41 +2543,53 @@ class Character:
         else:
             raise ValueError("Input did not contain 2 elements.")
 
-    def add_cond_man(self, in_info: tuple):
+    def set_spell_slots(self, in_list: List[Tuple[int, int]]):
         """
-        A function to add a condition to a character object in the form of a tuple (id number, string).
+        A funciton to set the character's spell slots.
+        Parameters:
+            in_list (List[Tuple[int, int]]): A list of integers representing the number of spell slots available.
+        Raises:
+            ValueError: When a list other than 9 entries is entered.
+        """
+        if len(in_list) != 9: # ensure the correct
+            raise ValueError("Input did not contain 9 elements.")
+        # Then use the for loop to set the spell slots
+        for idx, (num_a, num_b) in enumerate(in_list): # changes from a tuple to a nested list
+            self.spell_slots[idx + 1] = [num_a, num_b] # Set the available and total slots to the same number
+
+    def add_cond_man(self, in_con: Condition) -> Condition:
+        """
+        A function to add a condition to a character object in the form of condition object.
         Parameters:
             in_info (tuple): A tuple containing the database id number of the condition, along with the name.
         Returns:
-            OUT (bool): Whether the condition was added to the list (True) or not (False).
+            OUT (Condition): Returns the added condition if succesful. Returns None if not.
         """
-        # First we check if that condition is already in the database
-        for id_num, nm in self.conditions:
-            if id_num == in_info[0]: # do the id number's match
-                print(f"{self.name} already is {nm}.")
-                return False
-        # Otherwise
-        print(f"{self.name} now is {in_info[1]}.")
-        self.conditions.append(in_info) # add the tupple to the condition inventory
-        return True
+        # First we check if that condition is already in the database (we don't need to specify keys)
+        if in_con.id in self.conditions:
+            print(f"{self.name} already is {in_con.name}.")
+            return None
+        else:
+            # Otherwise
+            print(f"{self.name} now is {in_con.name}.")
+            self.conditions[in_con.id] = in_con
+            return in_con
             
-    def remove_cond_man(self, del_id: int):
+    def remove_cond_man(self, del_id: int) -> Condition:
         """
         A function to remove a condition from a characer.  Input comes in the form of an integer, the id
         of the condition we want to delete.
         Parameters:
             del_id (int): The database id of the condition we want to delete.
         Returns:
-            OUT (bool): Whether the condtion was removed (True), or was never in the list (False).
+            OUT (condition): Returns the removed condition if successful. Returns None if not.
         """
-        for index, (id_num, nm) in enumerate(self.conditions): # make sure that the condition is in the list
-            if id_num == del_id:
-                print(f"{self.name} is no longer {nm}.")
-                self.conditions.pop(index) # remove the tuple
-                return True
-        # Otherwise
-        print(f"{self.name} is not that conditon.")
-        return False
+        temp = self.conditions.pop(del_id, None)  # Remove and return the condition if it exists
+        if temp == None:
+            print(f"{self.name} is not that conditon.")
+        else: # We successfuly removed the condition.
+            print(f"{self.name} is no longer {temp.name}.")
+        return temp
 
     def add_to_inventory(self, in_inst: Equipment, in_quantity: int)->bool:
         """
@@ -1676,20 +2698,21 @@ class Character:
         else:
             return False
 
-    def add_condition(self, base: list[Condition])->bool:
+    def add_condition(self, base: list[Condition]) -> Condition:
         """
         A function to add data to a list using a tkinter window.
         Parameters:
-            base (list[Condition]): a list of Condition objects
+            base (list[Condition]): a list of Condition objects defined over in the sidekick data update
+                file. Usualy contains all the pre-defined condition objects.
         Returns:
-            output (bool): Was teh condition successfuly added
+            output (Condition): Returns the Condition if successfuly added. Returns None if not.
         """
         output = None # initialize output
         # Preprocess the base list into a dictionary for fast lookups--faster than a linear search
+        # We use the name as the dictionary key since that is what will be used in the entry box
         condition_map = {condition.name: condition for condition in base}
         # Filter out conditions that are already in self.conditions
-        current_ids = {cond[0] for cond in self.conditions}
-        display_list = [condition.name for condition in base if condition.id not in current_ids]
+        display_list = [condition.name for condition in base if condition.id not in self.conditions]
 
         # Define the add_check button
         def add_check(in_strv: tk.StringVar):
@@ -1697,11 +2720,14 @@ class Character:
             c_name = in_strv.get()
             if c_name in condition_map:
                 condition = condition_map[c_name]
-                self.conditions.append((condition.id, condition.name))
-                output = True
+                # We want to make sure we can't add the same condition twice
+                if condition.id not in self.conditions: # We only add if the condition is not already current
+                    output = self.add_cond_man(condition) # we now can add manual to the character.
+                else:
+                    error_box(f"{self.name} is already {condition.name}.")
             else:
                 error_box("Invalid condition selected")
-                output = False
+            pop.destroy() # Close the window here 
 
         # Create the pop-up window
         pop = tk.Toplevel()
@@ -1723,40 +2749,39 @@ class Character:
         # and the button to return the value of the menu
         but = tk.Button(pop,
                         text = "Confirm Choice",
-                        command = lambda c = choice: [add_check(c), pop.destroy()],
+                        command = lambda c = choice: add_check(c),
                         width = 15,
                         **BUTTON_OPTIONS_BLUE)
         but.pack()
         
         pop.grab_set()  # Makes popup modal (forces user to interact with it first)
         pop.wait_window()  # Pauses execution until popup is closed
-        return output
+        return output # Finaly return the output when finshed
 
-    def remove_condition(self, base: list[Condition])->bool:
+    def remove_condition(self, base: list[Condition])->Condition:
         """
         A function to remove a condition from a list using a tkinter window.
         Parameters:
-            base (list[Condition]): a list of Condition objects
+            base (list[Condition]): a list of Condition objects defined in another window
         Returns:
-            output (bool): Was the condition removed or not?
+            output (Condition): Returns the Condition if it is removed. Returns None if not.
         """
         output = None
         # Preprocess the base list into a dictionary for fast lookups--faster than a linear search
         condition_map = {condition.name: condition for condition in base}
         # Filter out conditions that are already in self.conditions
-        display_list = [cond[1] for cond in self.conditions] # an array
+        display_list = [cond.name for cond in self.conditions.values()] # access the values of the condition dict
 
-                # Define the add_check button
+        # Define the rem_check button
         def rem_check(in_strv: tk.StringVar):
             nonlocal output
             c_name = in_strv.get()
             if c_name in condition_map:
                 condition = condition_map[c_name]
-                self.conditions.remove((condition.id, condition.name)) # not ideal, but will do for now
-                output = True
+                output = self.remove_cond_man(condition.id) # We use the handy previously defined function
             else:
                 error_box("Invalid condition selected")
-                output = False
+            pop.destroy() # Close the window
 
         # Create the pop-up window
         pop = tk.Toplevel()
@@ -1778,7 +2803,7 @@ class Character:
         # and the button to return the value of the menu
         but = tk.Button(pop,
                         text = "Confirm Choice",
-                        command = lambda c = choice: [rem_check(c), pop.destroy()],
+                        command = lambda c = choice: rem_check(c),
                         width = 15,
                         **BUTTON_OPTIONS_BLUE)
         but.pack()
@@ -1786,9 +2811,60 @@ class Character:
         pop.grab_set()  # Makes popup modal (forces user to interact with it first)
         pop.wait_window()  # Pauses execution until popup is closed
         return output # return the output
+
+    def add_spell(self, spell_inst: Spell) -> bool:
+        """
+        A function to add a spell to the characters spell dictionary.
+        Parameters:
+            spell_inst (Spell): The spell we are trying to add to the character's spell list. Is a
+                Spell or child instance.
+        Returns:
+            OUT (bool): True if the spell was added, False if it was not added.
+        """
+        # We will first want to check if the spell is already in the inventory. If it 
+        # isn't, we will add it to the dictionary.
+        if spell_inst.id not in self.spell_list.keys():
+            self.spell_list[spell_inst.id] = spell_inst # Insert the spell instance
+            # Now we need to check if it is an attack spell or not
+            if isinstance(spell_inst, Attack_Spell):
+                self.atk_spell_list.append(spell_inst.id) # we add the id to the attack spell list.
+            return True
+        else:
+            error_box("Spell already known/prepared!")
+            return False
+        
+    def remove_spell(self, spell_id: int) -> bool:
+        """
+        A function to remove a spell from the character's inventory.
+        Parameters:
+            spell_id (int): The id of the spell we are removing.
+        Returns:
+            OUT (bool): True if the spell was removed, False if a KeyError occured.
+        """
+        removed_spell = self.spell_list.pop(spell_id, None)  # Returns None if key is missing
+        if isinstance(removed_spell, Spell):
+            # we now need to check if the spell was an attack spell or not
+            if isinstance(removed_spell, Attack_Spell):
+                self.atk_spell_list.remove(spell_id) # if it is a attack_spell, you remove it from the spell list
+            return True
+        else:
+            error_box(f"Spell of id {spell_id} not found in known/prepared spells!")
+            return False
+
+    def adjust_spell_slots(self, spell_level: int, in_bool: bool):
+        """
+        A function to adjust the carachter's spell slot inventory.
+        Paramaters:
+            spell_level (int): The level of the spell we are casting.
+            in_bool (bool): Are we using a spell slot (True) or gaining a spell slot (False).
+        """
+        # remember, we only want to adjust the first element in the pair, since that's the current spell
+        # slots.
+        if in_bool:
+            self.spell_slots[spell_level][0] += -1
+        else:
+            self.spell_slots[spell_level][0] += 1
 ##########################################################################################
-
-
 
 
 

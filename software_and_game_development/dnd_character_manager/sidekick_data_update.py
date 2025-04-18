@@ -45,9 +45,15 @@ os.chdir(sidefiles_path)
 
 # then link the database to that character, defining the global strings
 DB_STR = "databases/equipment_master.db"
+SM_STR = "databases/spell_master.db"
 
 # THIS IS VERY IMPORTANT
 def get_connection(db_path):
+    """
+    Get a connection to the database that mantains things like ON DELETE CASCADE
+    Parameters:
+        db_path: The path to the database.
+    """
     conn_out = sqlite3.connect(db_path)
     cursor = conn_out.cursor()
     cursor.execute("PRAGMA foreign_keys = ON;")  # Ensure foreign keys are enabled
@@ -58,7 +64,11 @@ def get_connection(db_path):
 import sqlite3
 
 def get_quick_connection(db_path):
-    """Returns a database connection with optimized settings."""
+    """
+    Returns a database connection with optimized settings.
+    Parameters:
+        db_path: The path to the database.
+    """
     conn_out = sqlite3.connect(db_path)
     cursor = conn_out.cursor()  # Always use a cursor for execution
 
@@ -283,7 +293,6 @@ def update_JSON():
         "image" : char.image,
         "db" : char.db,
         "color": char.color,
-        "conditions" : char.conditions,
         "lang" : char.lang,
         "exhaustion" : char.exhaustion,
         "pb" : char.pb}
@@ -424,7 +433,66 @@ def del_from_db(up_curs: sqlite3.Cursor, del_id: int, inventory_str: str= "prima
     except sqlite3.Error as e: # and if an exception occurs
         display_imp_error(f"SQLite error: {e}")
     return 0 # This line is only evaluated if everything goes smoothly
- 
+
+# Spell database functions----------------------------------------------------------------
+def add_spell_to_db(up_curs: sqlite3.Cursor, table: str, in_spell: fsu.Spell) -> bool:
+    """
+    A functon to add a spell to a database table.
+    Parameters:
+        up_curs (sqlite3.Cursor): The Cursor object we are using to search the database.
+        table (str): The name of the table we wish to insert the information into.
+        in_spell (fsu.Spell): The Spell object (or it's children) we wish to insert into the
+            database.
+    Raises:
+        NotImplementedError: Unable to update or recreate database.
+    Returns:
+        OUT (bool): True means that the spell was inserted, False means that the database was reset.
+    """
+    cmd_str = f"INSERT OR IGNORE INTO {table} (id, nm, spcl) VALUES (?, ?, ?)"
+
+    # We need to check if the spell is a special type.
+    spell_spcl = isinstance(in_spell, (fsu.Special_Spell, fsu.Special_Attack_Spell))
+
+    # if the spell with the same ID is already in the database, this wont add it
+    try:
+        up_curs.execute(cmd_str, (in_spell.id, in_spell.name, spell_spcl))
+    except sqlite3.IntegrityError: # if we are unable to do that
+        clear_table(up_curs, table) # clear the spell type table
+        # if we are writing to the main character spell list, we can access the spell list directly
+        if table == "char_spells":
+            for spell in char.spell_list.values(): # lineraly search and insert the spells into the database
+                up_curs.execute(cmd_str, (spell.id, spell.name, spell_spcl))
+        else:
+            for spell in char.spell_list.values(): # cheack each spell in the active inventory
+                if spell.id in char.atk_spell_list: # if the spell id is in the attack spell list
+                    up_curs.execute(cmd_str, (spell.id, spell.name, spell_spcl))
+        return False # Return False, meaning database was reset
+    except sqlite3.Error as e: # and if an unspecified exception occurs
+        display_imp_error(f"SQLite error: {e}")
+    # assuming nothing goes wrong, we should end up here
+    return True
+
+# Non-User Funciton
+def remove_spell_from_db(up_curs: sqlite3.Cursor, table: str, del_id: int) -> None:
+    """
+    A spell to remove a spell from a database table.
+    Parameters:
+        up_curs (sqlite3.Cursor): The cursor we are using to search the database
+        table (str): The name of the table we are modifying.
+        del_id (int): The id of the entry we want to delete.
+    Raises:
+        NotImplementedError: Unable to update database.
+    """
+    # Since we are deleting and not adding information, we only need the id of the spell and
+    # not the spell instance itself.
+    cmd_str = f"DELETE FROM {table} WHERE id = ?"
+    try:
+        up_curs.execute(cmd_str, (del_id,))
+    except sqlite3.Error as e: # and if an exception occurs
+        display_imp_error(f"SQLite error: {e}")
+
+# Character Database Management Functions, distinguished by using in_curs instead of up_curs
+
 # Non-User Function
 def add_eq_char_db(in_curs: sqlite3.Cursor, in_o: fsu.Equipment, in_q: int, inventory_str: str = "primary")->None:
     """
@@ -506,6 +574,44 @@ def add_skill_char_db(in_curs: sqlite3.Cursor, sk_id: int, sk_nm: str, sk_expt: 
         in_curs.execute(cmd_str, (sk_id, sk_nm, sk_expt,)) # place our three data points
     except sqlite3.Error as e: # and if an unspecified exception occurs
         display_imp_error(f"SQLite error: {e}")
+
+# Non-User Function
+def add_spell_char_db(in_curs: sqlite3.Cursor, in_s: fsu.Spell) -> None:
+    """
+    A function to manage the add_spell_to_db function, by ensuring that an added spell
+    is included in all of the proper character spell tables (such as char_spells or 
+    char-atk-spells).
+    Parameters:
+        in_curs (sqlite3.Cursor): The Cursor object we are using to search the character
+            database.
+        in_s (fsu.Spell): The Spell instance we wish to add to the charachters's
+            list of known/prepared spells.
+    """
+    # We first add to the main char_spells table
+    if add_spell_to_db(in_curs, "char_spells", in_s):
+        print(f"{in_s.name} Added Successfuly to char_spells")
+    else:
+        print("char_spells table reset")
+
+    # Next we check the attack spells list
+    if isinstance(in_s, fsu.Attack_Spell): # is our input an attack spell
+        if add_spell_to_db(in_curs, "char_atk_spells", in_s):
+            print(f"{in_s.name} added succesfuly to char_atk_spells")
+        else:
+            print("char_atk_spells table reset")
+
+# Non-User Function
+def remove_spell_char_db(in_curs: sqlite3.Cursor, in_id: int) -> None:
+    """
+    A function to manage the remove_spell_from_db function
+    Parameters:
+        in_curs (sqlite3.Cursor): The Cursor object we are using to search the character
+            database.
+        in_id (int): The id of the spell we are deleting.
+    """
+    remove_spell_from_db(in_curs, "char_spells", in_id)
+    # This should remove the spell from the char_atk_spells database due to the ON DELETE CASCADE
+    # defined in the char_atk_spells definition in the build_char_inventory.py script.
 
 #########################################################################################
 ####################### DATABASE SEARCH FUNCTIONS #######################################
@@ -659,7 +765,7 @@ def ret_skills_list(in_c: sqlite3.Cursor):
 # Non-User Function
 def ret_cond_list(in_c: sqlite3.Cursor):
     """
-    A function to retrive the raw skill information from the master database.
+    A function to retrive the raw Condition information from the master database.
     Non-User Function
     Parameters:
         in_c (sqlite3.Cursor): A cursor we can use to search the database.
@@ -673,7 +779,100 @@ def ret_cond_list(in_c: sqlite3.Cursor):
         out_list = [(row[0], row[1], row[2]) for row in in_c.fetchall()]
     except sqlite3.Error as e: # and if an unspecified exception occurs
         display_imp_error(f"SQLite error: {e}")
-    return out_list  
+    return out_list
+
+# Non-User Function
+def ret_spell_by_id(in_c: sqlite3.Cursor, sp_id: int) -> fsu.Spell:
+    """
+    A function to intialize a spell instance using information from the spell master
+    database. Requires the user to provide their own cursor to search the spell
+    master database, for ease of use in multiple queries.
+    Parameters:
+        in_c (sqlite3.Cursor): The Cursor object we are using to search the database
+        sp_id (int): The specific id number of the spell we wish to retrive.
+    Raises:
+        NotImplementedError: When the function is unable to access the database.
+    Returns:
+        OUT (fsu.Spell): The Spell or child instance.
+    """
+    def safe_check(in_command: str) -> tuple:
+        """
+        An internal function to safely recall information from the database
+        Parameters:
+            in_command (str): The command we would like to execute
+        Raises:
+            NotImplementedError: When the function is unable to access the database.
+        Returns:
+            row_out (tuple): a list of atributes.
+        """
+        try:
+            in_c.execute(in_command, (sp_id,))
+            row_out = in_c.fetchone()
+        except sqlite3.Error as e: # and if an exception occurs
+            display_imp_error(f"SQLite error: {e}")
+        return row_out # and return the row
+    
+    # We define our attack command string
+    # and grab the is_atk boolean
+    cmd_a = "SELECT atk FROM spell_master WHERE id = ?"
+    is_atk = safe_check(cmd_a)[0] # We only want the first element, the bool
+
+    # We also want to know if the spell is special
+    cmd_b = "SELECT spcl FROM spell_master WHERE id = ?"
+    is_spcl = safe_check(cmd_b)[0] # We only want the first element, the bool
+
+    # We define our command strings
+    cmd_1 = """
+            SELECT nm, scl, lvl, c_t, rng, dur, desc, v_c, s_c, m_c, m_c_d, m_c_c, 
+                    req_c, rit
+            FROM spell_master
+            WHERE id = ?"""
+    cmd_2 = """
+            SELECT e_shp, e_lgth, or_s, sve_t, sve_s, d_amt, d_die, d_bns, d_typ
+            FROM spell_attack
+            WHERE id = ?"""
+    cmd_3 = """
+            SELECT ind, s_desc
+            FROM spell_special
+            WHERE id = ?"""
+    
+    # We use our save check function
+    row_sp = safe_check(cmd_1)
+    if is_atk: # if the spell is an attack spell we need to grab the attack atributes
+        row_at = safe_check(cmd_2)
+    if is_spcl: # and if the spell is special, we need the special atributes.
+        row_spcl = safe_check(cmd_3)
+    
+    # Now We send out our data in an object
+    if is_atk and is_spcl: # The Spell is a special attack spell
+        return fsu.Special_Attack_Spell(sp_id, *row_sp, *row_at, *row_spcl)
+    elif is_atk and not is_spcl: # The spell is a normal attack spell
+        return fsu.Attack_Spell(sp_id, *row_sp, *row_at)
+    elif is_spcl and not is_atk: # The spell is a special non-attack spell
+        return fsu.Special_Spell(sp_id, *row_sp, *row_spcl)
+    else: # if the spell is not an attack spell
+        return fsu.Spell(sp_id, *row_sp)
+
+# Non-User Function
+def ret_single_spell(sp_id: int) -> fsu.Spell:
+    """
+    A function to retrive a single spell from the database, that does not requrie a seperatly
+    defined cursor. Good for single use querey's. Non-User Function.
+    Parameters:
+        sp_id (int): The id number of the spell we wish to retrive.
+    Returns:
+        out_spell (fsu.Spell): The Spell or Attack_Spell instance.
+    """
+    # Define the cursor we are using to search the database
+    conn = get_connection(SM_STR)
+    curs = conn.cursor()
+
+    # and use the ret_spell_by_id function
+    out_spell = ret_spell_by_id(curs, sp_id)
+    conn.close() # Close our connection
+
+    return out_spell # and return the spell object.
+
 ###############################################################################
 ### CHARACTER MODIFICATION FUNCTIONS ##########################################
 ###############################################################################
@@ -746,15 +945,13 @@ def delete_equipment(del_id: int, del_qnty: int, loc: str = "primary"):
     conn.commit() # Commit and close our database.
     conn.close()
 
-def add_cond(manual:bool = False, input: tuple = (None, None)):
+def add_cond(manual:bool = False, input:fsu.Condition = None):
     """
     A function to update the charactar object and JSON with a condition.
     Parameters:
         manual (bool, optional): Do we want to enter the information manualy or using the dialoge
             box. The default is False.
-        input (tuple, optional): The condition we want to input, in the form of an (int, str) tuple,
-            where the int is the condition database id, and the string is the condition name. The default is 
-            (None, None)
+        input (fsu.Condition, optional): The condition we want to input manualy, the default is None
     Raises:
         ValueError: When a manual entry is specified without a tuple.
     """
@@ -763,11 +960,18 @@ def add_cond(manual:bool = False, input: tuple = (None, None)):
         display_val_error("Input must be provided for a manual addition.")
     # first we add the condition to the char object.
     if manual:
-        suc = char.add_cond_man(input)
+        con = char.add_cond_man(input) # returns the condition if successrul
     else:
-        suc = char.add_condition(cond_list) # try to add the condition to the char object.
-    if suc:
-        update_JSON() # if we successufly modified the char object, we then update the JSON
+        con = char.add_condition(cond_list) # returns the condition if succssful
+    if con: # if con is not none, this will trigger.
+        # We now need to update the condition database quickly, so we use the quick connection
+        conn = get_quick_connection(char.db)
+        curs = conn.cursor()
+        # And define our command string
+        cstr = "INSERT OR IGNORE INTO char_conditions (id, nm) VALUES (?, ?)"
+        curs.execute(cstr, (con.id, con.name,)) # put in our data.
+        conn.commit() # and close out our querey to the database.
+        conn.close()
         print(f"{char.name}'s condition list updated.")
 
 def remove_cond(manual: bool = False, input: int = None):
@@ -785,11 +989,18 @@ def remove_cond(manual: bool = False, input: int = None):
     if manual and not input: # Both must exist
         display_val_error("Input must be provided for a manual addition.")
     if manual: #remove the condtion manualy
-        suc = char.remove_cond_man(input)
+        con = char.remove_cond_man(input)
     else: # remove the condition using the dialogue box.
-        suc = char.remove_condition(cond_list)
-    if suc:
-        update_JSON() # if successful in removing a condition, update the JSON
+        con = char.remove_condition(cond_list)
+    if con:
+        # We now need to update the condition database quickly, so we use the quick connection
+        conn = get_quick_connection(char.db)
+        curs = conn.cursor()
+        # And define our command string
+        cstr = "DELETE from char_conditions where id = ?"
+        curs.execute(cstr, (con.id,)) # spit out our data
+        conn.commit() # and close out our querey to the database.
+        conn.close()
         print(f"{char.name}'s condition list updated.")
 
 # Non-User Function
@@ -823,6 +1034,62 @@ def add_skill_prof(inpt_a: int, expert: bool = False)->bool:
     conn.commit()
     conn.close()
     
+@timing_decorator # Temporary
+def prepare_spell(in_spell: fsu.Spell):
+    """
+    A function to add a spell to a character's prepared/known spell list.
+    Parameters:
+        in_spell (fsu.Spell): The Spell instance we wish to add to the character's spell_list.
+    Raises:
+        TypeError: When the wrong argument types are entered.
+        ValueError: When the spell is unable to be added to the inventory
+    """
+    # we first bring in the char variable as a global, to ensure we can modify the
+    # character object
+    global char
+
+    # Ensure that the input is of the corrct type
+    if not isinstance(in_spell, fsu.Spell):
+        display_type_error("Incorrect Input: Please Enter A Spell Instance.")
+
+    # Add the spell to the active element first.
+    if char.add_spell(in_spell): # if the spell was added to the active inventory
+        conn = get_connection(char.db) # Define our connection to the database
+        curs_up = conn.cursor() # define our cursor
+        add_spell_char_db(curs_up, in_spell) # add the spell to the character database
+        conn.commit() # commit the changes
+        conn.close() # and close the connection.
+    else:
+        raise ValueError(f"Unable to add {in_spell.name} to {char.name}'s spell inventory.")
+
+@timing_decorator # Temporary
+def delete_spell(in_spell_id: int):
+    """
+    A function to delete a spell from the known/prepared spell list.
+    Parameters:
+        in_spell_id (int): The id number of the spell we are removing.
+    Raises:
+        TypeError: When the wrong argument types are entered.
+        ValueError: When the spell is unable to be removed from the known/prepared list.
+    """
+    # we first bring in the char variable as a global, to ensure we can modify the
+    # character object
+    global char
+
+    # Ensure that the input is of the correct type
+    if not isinstance(in_spell_id, int):
+        display_type_error("Incorrect Input: Please Enter A Spell ID Number.")
+
+    # we attepmt to remove the spell from the active inventory. If that is successful,
+    # we then remove the spell from the database.
+    if char.remove_spell(in_spell_id):
+        conn = get_connection(char.db) # Define our connection to the database
+        curs_up = conn.cursor() # define our cursor
+        remove_spell_char_db(curs_up, in_spell_id) # We remove the spell from the database
+        conn.commit() # commit the changes
+        conn.close() # and close the connection.
+    else:
+        raise ValueError(f"Unable to remove spell id #{in_spell_id} from {char.name}'s spell inventory.")
 
 ###############################################################################
 ### CHARACTER INITIALZATION FUNCTIONS #########################################
@@ -905,6 +1172,62 @@ def retrive_skill_info(ch_cur: sqlite3.Cursor):
         out_list[num] = [row[0] for row in ch_cur.fetchall()] # pass the inventory to the first part of the list.
     return out_list
 
+def retrive_spell_list(ch_cur: sqlite3.Cursor):
+    """
+    A function to retrive the charachter's known/prepared spell list.
+    Parameters:
+        ch_cur (sqlite3.Cursor): A Cursor instance we can use to check the database.
+    Raises:
+        NotImplementedError: When the function is unable to implement.
+    Returns:
+        out_list (List[int]): A list of the character's spell ids.
+    """
+    # We need a function that grabs the spell ids from the characters char_spells table
+    # and returns them as a list of integers.
+    out_list: List[int] = [] # initialize the list
+    try:
+        ch_cur.execute("SELECT id from char_spells;") # explicitly state the table we are searching
+        out_list = [row[0] for row in ch_cur.fetchall()] # pass the information into the list
+    except sqlite3.Error as e:
+        display_imp_error(f"Unable to access database: {e}")
+    return out_list
+
+def retrive_spell_slots(ch_cur: sqlite3.Cursor):
+    """
+    A function ot retrive the character's spell slots from the database.
+    Parameters:
+        ch_cur (sqlite3.Cursor): A Cursor instance we can use to check the database.
+    Raises:
+        NotImplementedError: When the function is unable to implement.
+    Returns:
+        out_list (List[Tuple[int, int]]): A list of the character's spell slots
+    """
+    out_list: List[Tuple[int, int]] = [] # initialize the list
+    try:
+        ch_cur.execute("SELECT cur, qnty FROM char_spell_slots;") # explicitly state the table we are searching
+        out_list = [(row[0], row[1]) for row in ch_cur.fetchall()] # pass the information into the list
+    except sqlite3.Error as e:
+        display_imp_error(f"Unable to access database: {e}")
+    return out_list
+
+def retrive_conditions(ch_cur: sqlite3.Cursor):
+    """
+    A function to retrive the condition information from the character's database
+    Parameters:
+        ch_cur (sqlite3.Cursor): The Cursor object we are using to search the database.
+    Raises:
+        NotImplementedError: When the function is unable to implement.
+    Returns:
+        out_list (List[int]): The id numbers of the charackter's current conditions.
+    """
+    out_list: List[int] = [] # Define our out_list
+    try:
+        ch_cur.execute("SELECT id FROM char_conditions;") # explicitly state the table we are searching
+        out_list = [row[0] for row in ch_cur.fetchall()] # and place that information in the list
+    except sqlite3.Error as e:
+        display_imp_error(f"Unable to access database: {e}")
+    return out_list
+
 # Non-User Function
 def create_char_object(file_loc: str):
     """
@@ -926,8 +1249,17 @@ def create_char_object(file_loc: str):
     char.set_atributes(retrive_atr_info(cursor)) # first we set the character atributes
     char.set_health(retrive_health_info(cursor)) # then the health info
     char.set_skills(retrive_skill_info(cursor)) # and the skill information
+    condition_list = retrive_conditions(cursor)
     inv_list = retrive_inventory_info(cursor) # Then retrive our inventory list
+    spell_list = retrive_spell_list(cursor) # and the spell list
+    char.set_spell_slots(retrive_spell_slots(cursor)) # next the spell slots
     conn.close() # and close the connection to the character database
+
+    # Next we need to add our conditions. We don't need a connection to the database, as the
+    # condition information is pre-loaded.
+    for id_num in condition_list:
+        # Since the id's start at 1, but the index of the cond_list starts at zero.
+        char.conditions[id_num] = cond_list[id_num - 1] 
 
     #finally, we retrive class information from the master databasse
     conn = get_connection(DB_STR)
@@ -937,9 +1269,18 @@ def create_char_object(file_loc: str):
         # We don't add this immediately to the char inventory since we need to close
         # the connection to the master database first.
         char.add_to_inventory(insert, q) # add directly to the inventory, don't need to save here
-    conn.close()
+    conn.close() # close the connection to the equipment databse
+
+    # Next, we retrive our spell information from the spell master database
+    conn = get_connection(SM_STR) # open the connection to the spell master database
+    cursor = conn.cursor()
+    # Now we need to set up the spell dict atribute
+    for sp_id in spell_list:
+        insert = ret_spell_by_id(cursor, sp_id)
+        char.add_spell(insert) # add the spell to the character spell dict
+    conn.close() # close the connection to the spell master database
     #### TEST AREA
-    print("Function create_char_object called.")
+    print(f"Function create_char_object called, initialized {char.name}.")
     return char
 
 # Non-User Function
@@ -982,9 +1323,9 @@ def initialize_all(infile: str):
     """
     global char_json
     char_json = infile
-    create_char_object(infile)
     initialize_skills()
     initialize_conditions()
+    create_char_object(infile)
 
 def retrive_char():
     """
@@ -998,12 +1339,29 @@ def update_char():
     """
     A function to quickly return health information.  Non-User Function
     Returns:
-        out (Tuple[int, int, int, List[Tuple[int, str]]]): The character's health information, 
+        output (Tuple[int, int, int]): The character's health information, 
             in the form of current health, max health, and temporary health points, followed
             by the condition list.
     """
-    output = [char.cur_hp, char.max_hp, char.temp_hp, char.conditions]
+    output = (char.cur_hp, char.max_hp, char.temp_hp)
     return output
+
+def update_cond():
+    """
+    A function to quickly return condition information. Non-User Function.
+    Returns:
+        output (Dict[int, fsu.Condition]): The output dict
+    """
+    output = char.conditions
+    return output
+
+def update_spell_list():
+    """
+    A seperate function to quickly return spell information. Non-User Function
+    Returns:
+        OUT (Dict[int, List[int]]): The characters spell slot information
+    """
+    return char.spell_slots # Return ths spell slot information
 
 def skill_names():
     """
@@ -1162,7 +1520,6 @@ def find_skill_mod(skill_in: fsu.Skill)->int:
     atr_bonus = (getattr(char, skill_in.usual_atr) - 10) // 2
     return char.pb * mult + atr_bonus
 
-
 def return_skill_name(in_id: int):
     """
     A function, that, when given a skill id returns the skill name. Non-User Function.
@@ -1241,6 +1598,76 @@ def skill_roll(id_in: int, normal: bool = False):
         skill.normalskill(find_skill_mod(skill)) # find the modifier and roll the skill.
     else:
         display_val_error(f"Skill with id {id_in} not found.")
+
+def use_spell(in_id: int):
+    """
+    A function to use a spell from the character's spell list.
+    Parameters:
+        in_id (int): The id number of the spell we are using.
+    Raises:
+        TypeError: Non-Integer passed as an argument.
+    """
+    # Ensure correct argument types
+    if not isinstance(in_id, int):
+        display_type_error("Argument must be an integer.")
+    spell = char.spell_list[in_id] # get the spell from the character's spell list
+
+    # We need to check if the spell is leveled or a cantrip
+    is_leveled = False if spell.level == 0 else True
+
+    # first we need to make sure that we have the spell slot available
+    if is_leveled and char.spell_slots[spell.level][0] <= 0:
+        # We can't cast a spell if we don't have a spell slot
+        fsu.error_box(f"No spell slots of level {spell.level} available!")
+        return None # exit the function without casting a spell
+
+    # define the bool that checks if the spell was cast
+    cast_spell = False
+
+    # if the spell is an attack spell, we use the attack spell function
+    if isinstance(spell, fsu.Attack_Spell):
+        if isinstance(spell, fsu.Special_Attack_Spell): # Are we dealing with a special type?
+            #### TEST LINE
+            print("SPECIAL SPELL ATTACK!")
+            cast_spell = spell.cast_special_spell_attack(char.pb, char.inte)
+        else:
+            cast_spell = spell.cast_spell_attack(char.pb, char.inte) # we use the attack spell function
+    # If the spell is a normal type special spell, we use that.
+    elif isinstance(spell, fsu.Special_Spell):
+        cast_spell = spell.cast_special_spell()
+    else: # If we are dealing with a basic spell.
+        cast_spell = spell.cast_base_spell()
+
+    # Adjust the spell slots
+    if is_leveled and cast_spell: # if the spell had a level and was cast
+        char.adjust_spell_slots(spell.level, True) # Use up a spell slot
+        #### TEST LINE
+        print(f"Currently have {char.spell_slots[spell.level][0]} remaining {spell.level} slots.")
+
+        # Next we need to update the database--We'll use a speedy connection.
+        conn = get_quick_connection(char.db) # get quick connection
+        spell_curs = conn.cursor() # Define cursor
+        cmd_txt = "UPDATE char_spell_slots SET cur = ? WHERE id = ?" # Define command Text
+        # We need the current spell slot integer (which we just updated) and the spells level
+        # to update the first entry in each pair of integers, the current spell slots.
+        spell_curs.execute(cmd_txt, (char.spell_slots[spell.level][0], spell.level))
+        conn.commit()
+        conn.close()
+
+    return None # end the function
+
+def reset_spell_slots():
+    global char
+    initialize_all("agripina_exotoria.json")
+    conn = get_connection(char.db)
+    curs = conn.cursor()
+    cmdtxt = "UPDATE char_spell_slots SET cur = ? WHERE id = ?"
+    curs.execute(cmdtxt, (3, 1, ))
+    conn.commit()
+    conn.close()
+    print("Changes Commited")
+
 ###############################################################################
 #### TESTING AREA #############################################################
 ###############################################################################
+

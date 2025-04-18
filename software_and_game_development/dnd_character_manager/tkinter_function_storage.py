@@ -14,6 +14,7 @@ os.chdir(script_dir)
 import tkinter as tk
 from tkinter import simpledialog
 from tkinter import ttk
+from typing import List, Tuple, Dict
 import function_storage_update as fss
 os.chdir(script_dir) # ensure we are in the correct folder.
 import sidekick_data_update as sd
@@ -34,6 +35,37 @@ LAB_OPTIONS_ONE = {
                 "pady": 10,
                 "justify" : tk.CENTER,
                 "relief" : tk.SOLID}
+LABEL_OP_SPELL = {
+                    "font": ("Times New Roman", 10),
+                    "bg": "#FFFFFF",
+                    "fg": "#202020",
+                    "bd" : 2,
+                    "relief" : tk.SOLID,
+                    "width" : 3}
+
+#### INTVAR MANAGER
+# TRANSFORM SPELL SLOT LIST INTO INTVARS =====================================
+def get_spell_iv(slotlist : Dict[int, List[int]]) -> None:
+    """
+    A function to read in the characters spell slot list into an array of 
+    IntVar objects that can be passed to the spell button function.
+    Parameters:
+        slotlist (Dict[int, List[int]]): The spell slot list. It should have nine two-item
+            lists.
+    Raises:
+        ValueError: When a list of the wrong size is entered.
+    Returns:
+        out_array (List[List[tk.IntVar]]): The array of IntVar objects.
+    """
+    if len(slotlist.keys()) != 9: # make sure there are 9 elements
+        raise ValueError("Incorect Dict Format in get_spell_iv")
+
+    out_array: List[List[tk.IntVar]] = [] # Define our out_array
+    
+    for int in slotlist.keys(): # we run our for loop over the keys
+        temp = [tk.IntVar(value=slotlist[int][0]), tk.IntVar(value=slotlist[int][1])]
+        out_array.append(temp) # and append the defined intvars into the array
+    return out_array
 
 
 #### FRAME GENERATING FUNCTIONS
@@ -498,7 +530,7 @@ def weaponbutton(root: tk.Frame, vars: list[tuple]):
                           bg = "#CCCCCC",
                           height=1,  # in characters, not pixels
                           width=15,
-                          bd=3,
+                          bd=2,
                           cursor="hand2",
                           font=("Times New Roman", 12, "italic"),
                           fg = "#202020",
@@ -745,9 +777,11 @@ def cond_effects(root: tk.Frame, st_in: tk.StringVar):
     
     # and create the icons
     con_ic = tk.Message(root,
-                      textvariable = st_in,
-                      bg = "#FFFFFF",
-                      width = 200)
+                        textvariable=st_in,
+                        bg="#FFFFFF",  # Background color
+                        fg="#202020",  # Font color
+                        font=("Times New Roman", 12, "bold"),  # Font style, size, and weight
+                        width=200)
     
     return con_ic
 
@@ -844,6 +878,75 @@ def add_eq_window(color: str):
     conchosen.pack(padx = 5, pady = 5)
     com_but.pack(padx = 5, pady = 5)
     eq_win.mainloop() # run the window
+
+def add_spell_buttons(root: tk.Frame, spl_lst: Dict[int, fss.Spell], slt_lst: List[List[tk.IntVar]],color: str):
+    """
+    A function to create the spell buttons for the GUI.
+    Parameters:
+        root (tk.Frame): The root frame we are placing the widget in.
+        spl_lst (Dict[int, fss.Spell]): A dict of Spell instances, where the key is the spell id.
+        slt_lst (List[List[tk.IntVar]]): A list of IntVar's contiaining the spell-slot information.
+        color (str): The primary character color.
+    Raises:
+        TypeError: Incorrect Arguments
+    Returns:
+        spell_frame (tk.Frame): The frame containing the spell buttons.
+    """
+    # check that our input is correct.
+    if not (isinstance(root, tk.Frame) and isinstance(spl_lst, dict) and isinstance(color, str)):
+        raise TypeError("Incorrect input, Error!")
+    
+    # We first create the master spell_frame 
+    spell_frame = tk.Frame(root, bg = color, padx = 5)
+
+    # initialize our level frames
+    level_frames: List[tk.Frame] = []
+    # We want to create a frame for each spell level
+    for i in range(10):
+        level_temp_frame = tk.Frame(spell_frame, bg = color) # A frame to contain both buttons and labels
+        level_label_frame = tk.Frame (level_temp_frame, bg = color) # a sub-frame to contain just the label info
+        if i == 0: # We need to make sure to treat cantrips differently, since they don't have spell slots
+            lev_txt = tk.StringVar(value = "Cantrips")
+            lev_lab = tk.Label(level_label_frame, textvariable=lev_txt, bg=color,
+                               font = ("Times New Roman", 12, "bold"), fg = "#FFFFFF")
+            lev_lab.grid(row=0, column=0) # Only one column this time.
+        else:
+            # Add a spell level label to the frame, including current and total spell slots
+            # per level.
+            lev_txt = tk.StringVar(value = f"Spell Level: {i}")
+            lev_lab = tk.Label(level_label_frame, textvariable=lev_txt, bg = color , font = ("Times New Roman", 12, "bold"),
+                            fg = "#FFFFFF")
+            # We need the index to be i-1 to acount for the fact that spell slot 1 is at index 0 
+            # since Cantrips don't have spell slots.
+            cur_spell_slots = tk.Label(level_label_frame, textvariable=slt_lst[i-1][0], **LABEL_OP_SPELL)
+            tot_spell_slots = tk.Label(level_label_frame, textvariable=slt_lst[i-1][1], **LABEL_OP_SPELL)
+            # And place all three in the level_label_frame
+            lev_lab.grid(row=0, column=0)
+            cur_spell_slots.grid(row=0, column=1)
+            tot_spell_slots.grid(row=0, column=2)
+        # Then place the label frame
+        level_label_frame.pack(padx = 5, pady = 1) # Ensure some padding.
+
+        level_frames.append(level_temp_frame) # and add to the level frames list
+
+    # Which we fill with the widgets
+    for spell in spl_lst.values():
+        # create a StringVar for the Spell Name
+        spell_SV = tk.StringVar(value = spell.name)
+        # and create the button
+        spell_but = tk.Button(level_frames[spell.level], textvariable = spell_SV, 
+                              command = lambda i = spell.id: sd.use_spell(i), bd = 2,
+                              bg = "#CCCCCC", width=15, fg = "#000000", cursor = "hand2", 
+                              font=("Times New Roman", 12, "italic"), justify=tk.CENTER, relief=tk.RAISED)
+        # and place it in the level frame
+        spell_but.pack()
+    
+    # place the level frames
+    for frame in level_frames:
+        frame.pack(pady = 3) # Want some spacing
+
+    # and return the frame
+    return spell_frame
 
     #### TESTING AREA ################################################################################################
 

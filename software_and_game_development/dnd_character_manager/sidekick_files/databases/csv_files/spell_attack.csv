@@ -1,0 +1,4 @@
+id,nm,e_shp,e_lgth,or_s,sve_t,sve_s,d_amt,d_die,d_bns,d_typ
+3,ray of frost,,,0,,,1,8,,cold
+4,burning hands,cone,15,1,2,0.5,3,6,,fire
+5,magic missle,,,0,7,0,1,4,1,force

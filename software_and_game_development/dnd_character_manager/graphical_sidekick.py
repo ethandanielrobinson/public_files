@@ -14,9 +14,10 @@ import tkinter as tk
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import threading
-from time import sleep
+from typing import List, Tuple, Dict
+# Removed unused import
 from time import time
-from typing import List, Tuple
+# Removed unused imports
 import os # Allows us to change directories
 
 # Get the directory containing the script
@@ -91,7 +92,9 @@ class FileHandler(FileSystemEventHandler):
                 self.last_modified_time = current_time
                 print(f"File Changed: {event.src_path}. Reloading...")
                 # And grab the updated information.
-                character.cur_hp, character.max_hp, character.temp_hp, character.conditions = sd.update_char()
+                character.cur_hp, character.max_hp, character.temp_hp = sd.update_char()
+                character.conditions = sd.update_cond()
+                character.spell_slots = sd.update_spell_list()
                 self.ui_update_callback(main_win)
 
 
@@ -111,8 +114,6 @@ def add_string(vars: list[str]):
         if index < len_con:
             output += spacer
     return output
-    
-
 
 def start_observer(ui_update_callback):
     observer = Observer()
@@ -124,7 +125,6 @@ def start_observer(ui_update_callback):
     
     observer.start()
     return observer
-
 
 # EQUIPMENT BUTTON ===========================================================
 def equipment_press(in_root: tk.Tk):
@@ -147,6 +147,55 @@ def equipment_press(in_root: tk.Tk):
 
     main_win.mainloop()
 
+def create_scroll_frame(parent_window: tk.Tk):
+    """
+    Creates a over-frame with a scrollbar. Created with assistance from
+    ChatGPT.
+    Parameters:
+        parent_window (tk.Tk): The parent Tkinter window.
+    Returns:
+        scrollable_frame (tk.Frame): The scrollable frame.
+    """
+    # 1) create a Canvas with no border and the same bg as the window
+    canvas = tk.Canvas(parent_window,
+                       bg=parent_window['bg'],
+                       highlightthickness=0,
+                       borderwidth=0)
+    scrollbar = tk.Scrollbar(parent_window,
+                             orient="vertical",
+                             command=canvas.yview)
+    canvas.configure(yscrollcommand=scrollbar.set)
+
+    # pack them
+    scrollbar.pack(side="right", fill="y")
+    canvas.pack(side="left", fill="both", expand=True)
+
+    # 2) create your scrollable_frame inside the canvas
+    scrollable_frame = tk.Frame(canvas, bg=parent_window['bg'])
+    canvas_window = canvas.create_window((0, 0),
+                                         window=scrollable_frame,
+                                         anchor="nw")
+
+    # 3a) whenever the inner frame changes size, update the scrollregion
+    scrollable_frame.bind(
+        "<Configure>",
+        lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+    )
+
+    # 3b) whenever the canvas itself changes size, force the window‐item
+    #     (scrollable_frame) to match its width
+    canvas.bind(
+        "<Configure>",
+        lambda e: canvas.itemconfig(canvas_window, width=e.width)
+    )
+
+    # re‑attach your mousewheel scrolling
+    canvas.bind_all(
+        "<MouseWheel>",
+        lambda e: canvas.yview_scroll(int(-1 * (e.delta / 120)), "units")
+    )
+
+    return scrollable_frame
 
 def create_main_window():
     
@@ -158,7 +207,9 @@ def create_main_window():
         hit_points_current.set(character.cur_hp)
         hit_points_max.set(character.max_hp)
         hit_points_temp.set(character.temp_hp)
-        cond_current.set(add_string([cond[1] for cond in character.conditions]))  
+        cond_current.set(add_string([cond.name for cond in character.conditions.values()]))
+        for idx, [iv_cur, _] in enumerate(slot_ivs):
+            iv_cur.set(character.spell_slots[idx + 1][0])
         print(f"Updated UI: {character.name}, HP: {character.cur_hp}/{character.max_hp}")
 
     def _update_ui(root: tk.Tk):
@@ -169,9 +220,12 @@ def create_main_window():
 
     #create main window
     window = tk.Tk()
-    window.config(bg = "#FFFFFF") # Set the background of the window to be BYU slate grey
+    window.config(bg = "#92734A") # Set the background of the window to be parchment
+    window.geometry("1300x700") # Set the size of the window
 
     window.title(character.name) # Window Name
+
+    overall_frame = create_scroll_frame(window) # Create the overall frame
 
     ###############################################################################
     #### CREATING THE DATA ########################################################
@@ -247,26 +301,42 @@ def create_main_window():
         skill_list.append(skill_var)
 
     # Conditions display
-    cond_str = add_string([cond[1] for cond in character.conditions])
+    cond_str = add_string([cond.name for cond in character.conditions.values()]) 
     cond_current = tk.StringVar(value = cond_str)        
+
+    #------------------------------------------------------------------------------
+    #### FRAME 4
+    #------------------------------------------------------------------------------
+    # Create the spell slot information
+    slot_ivs: List[List[tk.IntVar]] = tfs.get_spell_iv(character.spell_slots)
 
     ###############################################################################
     #### CREATING THE FRAMES ######################################################
     ###############################################################################
     #### MASTER FRAMES ============================================================
     master_1_color = "#92734A"
-    master_1 = tk.Frame(window, bg = master_1_color) # Atributes and Photo
+    master_1 = tk.Frame(overall_frame, bg = master_1_color) # Atributes and Photo
     master_1.grid(row = 0, column=0, sticky="nesw")
+    master_1.config(width=400, height=700)  # Sets size directly
 
     # Weapons and Armor Class
     master_2_color = character.color
-    master_2 = tk.Frame(window, bg = master_2_color)
+    master_2 = tk.Frame(overall_frame, bg = master_2_color, bd=3, relief=tk.SOLID) # Weapons and Armor Class
     master_2.grid(row=0, column=1, sticky="nesw")
+    master_2.config(width=300, height=700) # Sets size directly
 
     # Skill Pane
     master_3_color = "#92734A"
-    master_3 = tk.Frame(window, bg = master_3_color)
+    master_3 = tk.Frame(overall_frame, bg = master_3_color) # Skill Pane
     master_3.grid(row=0, column=2, sticky="nesw")
+    master_3.config(width=300, height=700) # Sets size directly
+
+    # Spell Pane
+    master_4_color = character.color
+    master_4 = tk.Frame(overall_frame, bg = master_4_color, bd=3, relief=tk.SOLID) # Spell Pane
+    master_4.grid(row=0, column=3, sticky="nesw")
+    master_4.config(width=300, height=700) # Sets Size directly
+
     #### SUB FRAMES ===============================================================
     # master_1 --------------------------------------------------------------------
     atribute_frame = tfs.padded_frame(master_1, 25, 6, master_1_color) # Create the atribute Frame
@@ -279,6 +349,8 @@ def create_main_window():
     skill_frame = tk.Frame(master_3, bg = master_3_color, padx = 10, pady = 10) # Create the skill frame
     condition_frame = tk.Frame(master_3, bg = master_3_color, padx = 10, pady = 10) # Create the Condition Frame
     equipment_frame = tk.Frame(master_3, bg = master_3_color, padx = 10, pady = 10) # Create the equipment frame
+    # master_4 --------------------------------------------------------------------
+    m_spell_frame = tk.Frame(master_4, bg = master_4_color, padx = 10, pady = 10) # create the master spell frame.
     ###############################################################################
     #### CREATING THE LABELS ######################################################
     ###############################################################################
@@ -342,7 +414,7 @@ def create_main_window():
     shield_check = tfs.equipcheck(armor_frame, incolor = "#CCCCCC", fontcolor = "#202020")
 
     #------------------------------------------------------------------------------
-    #### Skill Frame
+    #### Master 3
     #-----------------------------------------------------------------------------
     sk_lab = tk.StringVar()
     sk_lab.set("Skill List")
@@ -381,6 +453,17 @@ def create_main_window():
                         bg = "#CC0000",
                         width = 6,
                         cursor = "hand2")
+    
+    #------------------------------------------------------------------------------
+    #### Master 4
+    #-----------------------------------------------------------------------------
+    sp_str = tk.StringVar()
+    sp_str.set("Spells")
+    sp_title = tfs.longlabel(m_spell_frame, sp_str)
+    
+    # We generate the spell list buttons using add_spell_buttons, which takes the charachter's current
+    # prepared/known spells and the spell slot list in the form of IntVar objects (slot_ivs)
+    spell_lst = tfs.add_spell_buttons(m_spell_frame, character.spell_list, slot_ivs, character.color)
 
     ###############################################################################
     #### PLACING THE LABELS #######################################################
@@ -537,6 +620,17 @@ def create_main_window():
 
     # back to the master
     exit_but.grid(row = 3, column = 0, pady = 5)
+
+    #==============================================================================
+    #### 4th Master Frame
+    # (row = 0) Spell Frame
+    #==============================================================================
+    # Only one column here
+    # Row 0 ---------------------------------------------------------------------
+    sp_title.grid(row=0, column=0, pady=5)
+    spell_lst.grid(row=1, column=0)
+    #----------------------------------------------------------------------------
+    m_spell_frame.grid(row=0, column=0)
 
     return window, _update_ui
 
