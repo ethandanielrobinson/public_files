@@ -14,7 +14,7 @@ This repository is organized into the following sections:
 
 ### 2. **Scientific Analysis and Computational Physics**
 - **Data Analysis and Step Forward Programing** – Simple programs designed to solve physical systems created during my studies at BYU.
-- **Quality of Life Improvents** - Programs made to simplify and solve physical problems.
+- **Data Methods** -- C++ Programs designed to examine computerized data methods.
   
 ### 3. **Software & Game Development**
 - **D&D Character Manager** – A JSON and SQLite3-based system for managing character data across multiple scripts. Primarily used as a testbed to help with Object Oriented Programming (OOP) concepts and applications.
